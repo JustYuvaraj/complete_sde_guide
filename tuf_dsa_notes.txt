@@ -1,0 +1,1139 @@
+
+================================================================================
+                        SECTION 1: SORTING ALGORITHMS
+================================================================================
+
+
++++++++++++++++++++++++++++++++
+  PROBLEM 1: SELECTION SORT
+++++++++++++++++++++++++++++++++
+-----------
+Selection Sort is the simplest sorting algorithm. Imagine you have a bunch of
+cards on a table. You scan ALL of them, pick the SMALLEST one, and place it
+first. Then scan the remaining cards, pick the next smallest, place it second.
+Keep doing this until everything is sorted.
+
+In short: "Select the minimum, put it in its correct position."
+
+APPROACH & LOGIC:
+-----------------
+Think of the array as two parts:
+  - LEFT side  = already sorted (grows with each pass)
+  - RIGHT side = unsorted (shrinks with each pass)
+
+For each position i (from 0 to n-2):
+  1. Assume arr[i] is the minimum
+  2. Scan from i+1 to n-1 to find the ACTUAL minimum
+  3. Swap the actual minimum with arr[i]
+
+After pass 0: smallest element is at index 0
+After pass 1: 2nd smallest is at index 1
+...and so on.
+
+WHY DOES IT WORK?
+  After each pass, we guarantee that one more element is in its final 
+  correct position. After n-1 passes, the entire array is sorted.
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. Loop i from 0 to n-2:
+       a. Set minIndex = i
+       b. Loop j from i+1 to n-1:
+            - If arr[j] < arr[minIndex], update minIndex = j
+       c. Swap arr[i] and arr[minIndex]
+  2. Array is now sorted.
+
+DRY RUN:
+--------
+  arr = [64, 25, 12, 22, 11]
+
+  Pass 0: Find min in [64,25,12,22,11] → min=11 at index 4 → swap(64,11)
+          arr = [11, 25, 12, 22, 64]
+
+  Pass 1: Find min in [25,12,22,64] → min=12 at index 2 → swap(25,12)
+          arr = [11, 12, 25, 22, 64]
+
+  Pass 2: Find min in [25,22,64] → min=22 at index 3 → swap(25,22)
+          arr = [11, 12, 22, 25, 64]
+
+  Pass 3: Find min in [25,64] → min=25, already in place
+          arr = [11, 12, 22, 25, 64]  ✅ SORTED!
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n²) — always, even if array is already sorted
+  Space: O(1)  — in-place, no extra memory
+  Stable? NO (relative order of equal elements may change)
+
+CODE (C++):
+-----------
+void selectionSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+        swap(arr[i], arr[minIndex]);
+    }
+}
+
+INTERVIEW TIP:
+--------------
+  Selection sort is rarely asked as a coding problem, but understanding it
+  helps you grasp the "find minimum" pattern used in many other problems.
+  If asked "which sort is simplest?", this is your answer.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 2: BUBBLE SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHAT IS IT?
+-----------
+Bubble Sort works by repeatedly comparing ADJACENT elements and swapping them
+if they're in the wrong order. The largest elements "bubble up" to the end of
+the array with each pass — just like air bubbles rising to the surface of water.
+
+In short: "Compare neighbors, swap if wrong order. Biggest bubbles to the end."
+
+APPROACH & LOGIC:
+-----------------
+Think of it like this:
+  - In Pass 1: The LARGEST element reaches its correct position (end)
+  - In Pass 2: The 2nd LARGEST reaches its position
+  - ...and so on
+
+For each pass (i from n-1 down to 1):
+  Compare every pair of adjacent elements from index 0 to i-1.
+  If arr[j] > arr[j+1], swap them.
+
+OPTIMIZATION: If in any complete pass, NO swaps happened, the array is already
+sorted → we can stop early! This makes best case O(n).
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. Loop i from n-1 down to 1:
+       a. Set swapped = false
+       b. Loop j from 0 to i-1:
+            - If arr[j] > arr[j+1]:
+                Swap arr[j] and arr[j+1]
+                Set swapped = true
+       c. If swapped is false, BREAK (array is sorted)
+  2. Array is now sorted.
+
+DRY RUN:
+--------
+  arr = [5, 1, 4, 2, 8]
+
+  Pass 1 (i=4): 
+    Compare 5,1 → swap → [1,5,4,2,8]
+    Compare 5,4 → swap → [1,4,5,2,8]
+    Compare 5,2 → swap → [1,4,2,5,8]
+    Compare 5,8 → no swap
+    Result: [1, 4, 2, 5, 8]  (8 is in final position)
+
+  Pass 2 (i=3):
+    Compare 1,4 → no swap
+    Compare 4,2 → swap → [1,2,4,5,8]
+    Compare 4,5 → no swap
+    Result: [1, 2, 4, 5, 8]  (5 is in final position)
+
+  Pass 3 (i=2):
+    Compare 1,2 → no swap
+    Compare 2,4 → no swap
+    No swaps happened → BREAK early!
+    
+  Final: [1, 2, 4, 5, 8]  ✅ SORTED!
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n²) worst/average | O(n) best (already sorted, with optimization)
+  Space: O(1)  — in-place
+  Stable? YES (equal elements maintain their relative order)
+
+CODE (C++):
+-----------
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = n - 1; i >= 1; i--) {
+        bool swapped = false;
+        for (int j = 0; j < i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+    }
+}
+
+INTERVIEW TIP:
+--------------
+  Always mention the "swapped" optimization — it shows you think about
+  edge cases. Interviewers love candidates who optimize even simple algorithms.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 3: INSERTION SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHAT IS IT?
+-----------
+Insertion Sort works exactly like how you sort playing cards in your hand.
+You pick up one card at a time and INSERT it into its correct position among
+the cards you've already sorted.
+
+In short: "Pick an element, shift larger elements right, insert it in place."
+
+APPROACH & LOGIC:
+-----------------
+Think of the array as two parts:
+  - LEFT side  = sorted hand of cards (starts with just 1 card)
+  - RIGHT side = pile of unsorted cards
+
+For each card (element) from index 1 to n-1:
+  1. Pick the current element (key)
+  2. Compare it with elements to its LEFT
+  3. Shift all elements that are GREATER than key one position to the right
+  4. Place the key in the gap created
+
+WHY IS IT USEFUL?
+  - Best for SMALL arrays or NEARLY SORTED arrays
+  - Used internally by many hybrid sorting algorithms (like TimSort)
+  - Online algorithm: can sort data as it arrives
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. Loop i from 1 to n-1:
+       a. key = arr[i]
+       b. j = i - 1
+       c. While j >= 0 AND arr[j] > key:
+            - arr[j+1] = arr[j]    (shift right)
+            - j = j - 1
+       d. arr[j+1] = key           (insert key)
+  2. Array is now sorted.
+
+DRY RUN:
+--------
+  arr = [12, 11, 13, 5, 6]
+
+  i=1: key=11, compare with 12 → 12>11, shift right → [12,12,13,5,6]
+       Insert 11 at index 0 → [11, 12, 13, 5, 6]
+
+  i=2: key=13, compare with 12 → 12<13, stop
+       13 stays at index 2 → [11, 12, 13, 5, 6]
+
+  i=3: key=5, compare with 13→shift, 12→shift, 11→shift
+       [11,11,12,13,6] → insert 5 at index 0 → [5, 11, 12, 13, 6]
+
+  i=4: key=6, compare with 13→shift, 12→shift, 11→shift
+       Insert 6 at index 1 → [5, 6, 11, 12, 13]  ✅ SORTED!
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n²) worst/average | O(n) best (already sorted)
+  Space: O(1)  — in-place
+  Stable? YES
+
+CODE (C++):
+-----------
+void insertionSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+INTERVIEW TIP:
+--------------
+  If asked "when would you use Insertion Sort over Quick Sort?", say:
+  "For small arrays (n < 20) or nearly sorted data, insertion sort is faster
+  because it has very low overhead and O(n) best case."
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 4: MERGE SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHAT IS IT?
+-----------
+Merge Sort is the first "serious" sorting algorithm you'll learn. It uses
+the DIVIDE AND CONQUER strategy:
+  1. DIVIDE the array into two halves
+  2. CONQUER (sort) each half recursively
+  3. MERGE the two sorted halves into one sorted array
+
+It's like splitting a deck of cards in half, sorting each half separately,
+then combining them by picking the smaller card from each pile.
+
+In short: "Split → Sort each half → Merge them back together."
+
+APPROACH & LOGIC:
+-----------------
+The magic is in the MERGE step. Given two SORTED arrays, how do you combine
+them into one sorted array?
+  - Use two pointers, one for each array
+  - Compare the elements at both pointers
+  - Take the smaller one and move that pointer forward
+  - Repeat until one array is exhausted
+  - Copy remaining elements from the other array
+
+The RECURSION handles the splitting:
+  Base case: array of size 0 or 1 → already sorted
+  Recursive: split at mid, sort left half, sort right half, merge
+
+WHY IS IT IMPORTANT?
+  - Guaranteed O(n log n) in ALL cases (unlike Quick Sort)
+  - Stable sort (maintains relative order of equal elements)
+  - Foundation for understanding Divide & Conquer
+  - Used in external sorting (when data doesn't fit in memory)
+
+ALGORITHM (Step by Step):
+-------------------------
+  mergeSort(arr, low, high):
+    1. If low >= high, return (base case: 0 or 1 element)
+    2. mid = (low + high) / 2
+    3. mergeSort(arr, low, mid)          // Sort left half
+    4. mergeSort(arr, mid+1, high)       // Sort right half
+    5. merge(arr, low, mid, high)        // Merge both halves
+
+  merge(arr, low, mid, high):
+    1. Create temp array
+    2. left = low, right = mid+1
+    3. While left <= mid AND right <= high:
+         - If arr[left] <= arr[right]: push arr[left++] to temp
+         - Else: push arr[right++] to temp
+    4. Copy remaining elements from left part (if any)
+    5. Copy remaining elements from right part (if any)
+    6. Copy temp back to arr[low..high]
+
+DRY RUN:
+--------
+  arr = [38, 27, 43, 3, 9, 82, 10]
+
+  Split: [38, 27, 43, 3] and [9, 82, 10]
+  
+  Left half [38, 27, 43, 3]:
+    Split: [38, 27] and [43, 3]
+    [38,27] → [38] [27] → merge → [27, 38]
+    [43,3]  → [43] [3]  → merge → [3, 43]
+    Merge [27,38] + [3,43] → [3, 27, 38, 43]
+
+  Right half [9, 82, 10]:
+    Split: [9, 82] and [10]
+    [9,82] → already sorted (9 < 82)
+    Merge [9,82] + [10] → [9, 10, 82]
+
+  Final merge: [3,27,38,43] + [9,10,82]
+    Compare 3,9 → take 3
+    Compare 27,9 → take 9
+    Compare 27,10 → take 10
+    Compare 27,82 → take 27
+    Compare 38,82 → take 38
+    Compare 43,82 → take 43
+    Take 82
+    Result: [3, 9, 10, 27, 38, 43, 82]  ✅ SORTED!
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n log n) — always (best, average, worst)
+  Space: O(n)       — needs temporary array for merging
+  Stable? YES
+
+CODE (C++):
+-----------
+void merge(vector<int>& arr, int low, int mid, int high) {
+    vector<int> temp;
+    int left = low, right = mid + 1;
+    while (left <= mid && right <= high) {
+        if (arr[left] <= arr[right]) temp.push_back(arr[left++]);
+        else temp.push_back(arr[right++]);
+    }
+    while (left <= mid) temp.push_back(arr[left++]);
+    while (right <= high) temp.push_back(arr[right++]);
+    for (int i = low; i <= high; i++) arr[i] = temp[i - low];
+}
+
+void mergeSort(vector<int>& arr, int low, int high) {
+    if (low >= high) return;
+    int mid = (low + high) / 2;
+    mergeSort(arr, low, mid);
+    mergeSort(arr, mid + 1, high);
+    merge(arr, low, mid, high);
+}
+
+INTERVIEW TIP:
+--------------
+  Merge Sort is the FOUNDATION for problems like:
+  - Count Inversions (modified merge sort)
+  - Reverse Pairs
+  - Sort Linked List (merge sort is BEST for linked lists)
+  Master this and you unlock 3+ interview problems automatically.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 5: QUICK SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHAT IS IT?
+-----------
+Quick Sort is the FASTEST sorting algorithm in practice. Like Merge Sort, it
+uses Divide and Conquer, but instead of splitting in the middle, it picks a
+PIVOT element and PARTITIONS the array:
+  - All elements SMALLER than pivot → go to the LEFT
+  - All elements GREATER than pivot → go to the RIGHT
+  - Pivot is now in its CORRECT FINAL POSITION
+
+Then recursively sort the left and right parts.
+
+In short: "Pick a pivot, put smaller on left, bigger on right, repeat."
+
+APPROACH & LOGIC:
+-----------------
+The key operation is PARTITION:
+  1. Choose a pivot (commonly the last element, first element, or random)
+  2. Rearrange the array so that:
+     - Elements < pivot are on the left
+     - Elements > pivot are on the right
+     - Pivot is at its final sorted position
+  3. Return the pivot's index
+
+After partition, the pivot is DONE — it's in its correct place forever.
+Then we recursively do the same for the left and right subarrays.
+
+WHY IS IT FAST?
+  - In practice, it's faster than Merge Sort because:
+    * It sorts IN-PLACE (no extra array needed)
+    * It has better cache performance
+    * The constant factor is smaller
+
+ALGORITHM (Step by Step):
+-------------------------
+  quickSort(arr, low, high):
+    1. If low < high:
+       a. pivotIndex = partition(arr, low, high)
+       b. quickSort(arr, low, pivotIndex - 1)   // Sort left of pivot
+       c. quickSort(arr, pivotIndex + 1, high)   // Sort right of pivot
+
+  partition(arr, low, high):
+    1. pivot = arr[low]  (choosing first element as pivot)
+    2. i = low, j = high
+    3. While i < j:
+       a. Move i right while arr[i] <= pivot AND i <= high
+       b. Move j left while arr[j] > pivot AND j >= low
+       c. If i < j: swap(arr[i], arr[j])
+    4. swap(arr[low], arr[j])  (put pivot in correct position)
+    5. Return j (pivot's final position)
+
+DRY RUN:
+--------
+  arr = [4, 6, 2, 5, 7, 9, 1, 3]
+  pivot = 4 (first element)
+
+  i starts at 0, j starts at 7
+  
+  Move i right while arr[i] <= 4: i=0(4≤4), i=1(6>4 STOP) → i=1
+  Move j left while arr[j] > 4:   j=7(3<4 STOP) → j=7
+  i < j? 1 < 7 YES → swap(6, 3) → [4, 3, 2, 5, 7, 9, 1, 6]
+  
+  Move i right: i=1(3≤4), i=2(2≤4), i=3(5>4 STOP) → i=3
+  Move j left:  j=7(6>4), j=6(1<4 STOP) → j=6
+  i < j? 3 < 6 YES → swap(5, 1) → [4, 3, 2, 1, 7, 9, 5, 6]
+  
+  Move i right: i=3(1≤4), i=4(7>4 STOP) → i=4
+  Move j left:  j=6(5>4), j=5(9>4), j=4(7>4), j=3(1<4 STOP) → j=3
+  i < j? 4 < 3 NO → EXIT loop
+  
+  swap(arr[low], arr[j]) → swap(arr[0], arr[3]) → swap(4, 1)
+  arr = [1, 3, 2, 4, 7, 9, 5, 6]
+                   ^ pivot is at index 3 — CORRECT POSITION!
+  
+  Now recursively sort [1,3,2] and [7,9,5,6]
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n log n) average | O(n²) worst (already sorted array with bad pivot)
+  Space: O(log n)   — recursion stack
+  Stable? NO
+
+  To avoid worst case: use RANDOM pivot selection.
+
+CODE (C++):
+-----------
+int partition(vector<int>& arr, int low, int high) {
+    int pivot = arr[low];
+    int i = low, j = high;
+    while (i < j) {
+        while (i <= high && arr[i] <= pivot) i++;
+        while (j >= low && arr[j] > pivot) j--;
+        if (i < j) swap(arr[i], arr[j]);
+    }
+    swap(arr[low], arr[j]);
+    return j;
+}
+
+void quickSort(vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int pivotIndex = partition(arr, low, high);
+        quickSort(arr, low, pivotIndex - 1);
+        quickSort(arr, pivotIndex + 1, high);
+    }
+}
+
+INTERVIEW TIP:
+--------------
+  Quick Sort vs Merge Sort — know when to use each:
+  ┌──────────────────┬──────────────┬─────────────────┐
+  │                  │  Quick Sort  │   Merge Sort    │
+  ├──────────────────┼──────────────┼─────────────────┤
+  │ Average Time     │ O(n log n)   │ O(n log n)      │
+  │ Worst Time       │ O(n²)        │ O(n log n)      │
+  │ Space            │ O(log n)     │ O(n)            │
+  │ Stable?          │ No           │ Yes             │
+  │ In-place?        │ Yes          │ No              │
+  │ Best for         │ Arrays       │ Linked Lists    │
+  │ Cache friendly?  │ Yes          │ No              │
+  └──────────────────┴──────────────┴─────────────────┘
+  
+  Quick Sort is preferred for arrays. Merge Sort is preferred for linked lists.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 6: RECURSIVE BUBBLE SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-----------
+Recursive Bubble Sort is the same Bubble Sort logic, but instead of using
+nested loops, we use RECURSION to handle the outer loop.
+
+Think of it this way:
+  - One pass of bubble sort pushes the largest element to the end
+  - After that pass, the problem REDUCES to sorting n-1 elements
+  - That's a SMALLER version of the same problem → perfect for recursion!
+
+APPROACH & LOGIC:
+-----------------
+  Base case: if n == 1, array is sorted (single element)
+  Recursive step:
+    1. Do one pass of bubble sort (compare adjacent, swap if needed)
+    2. The largest element is now at position n-1
+    3. Call recursively for n-1 elements
+
+It's exactly like iterative bubble sort, but the outer loop is replaced
+by recursive calls with decreasing n.
+
+ALGORITHM (Step by Step):
+-------------------------
+  recursiveBubbleSort(arr, n):
+    1. If n == 1, return (base case)
+    2. Loop j from 0 to n-2:
+         - If arr[j] > arr[j+1], swap them
+    3. recursiveBubbleSort(arr, n-1)
+
+DRY RUN:
+--------
+  arr = [3, 1, 2]
+
+  Call with n=3:
+    Pass: compare 3,1→swap→[1,3,2], compare 3,2→swap→[1,2,3]
+    Call with n=2:
+      Pass: compare 1,2→no swap
+      Call with n=1: BASE CASE → return
+  
+  Result: [1, 2, 3]  ✅
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n²)
+  Space: O(n) — recursion stack (this is WORSE than iterative O(1))
+
+CODE (C++):
+-----------
+void recursiveBubbleSort(vector<int>& arr, int n) {
+    if (n == 1) return;
+    for (int j = 0; j < n - 1; j++) {
+        if (arr[j] > arr[j + 1]) {
+            swap(arr[j], arr[j + 1]);
+        }
+    }
+    recursiveBubbleSort(arr, n - 1);
+}
+
+INTERVIEW TIP:
+--------------
+  This is mainly asked to test your understanding of recursion.
+  The key insight: "Can you convert any iterative solution to recursive?"
+  Yes — replace the outer loop with a recursive call.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 7: RECURSIVE INSERTION SORT
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-----------
+Same idea as above — take iterative Insertion Sort and replace the outer
+loop with recursion.
+
+Think of it as: "First sort n-1 elements recursively, then INSERT the
+nth element into its correct position in the sorted part."
+
+APPROACH & LOGIC:
+-----------------
+  Base case: if n <= 1, already sorted
+  Recursive step:
+    1. Sort the first n-1 elements (recursive call)
+    2. Take the nth element (arr[n-1]) as the key
+    3. Insert it into the correct position in the sorted part
+
+This is the REVERSE order compared to recursive bubble sort:
+  - Bubble sort: do one pass FIRST, then recurse on smaller
+  - Insertion sort: recurse on smaller FIRST, then insert
+
+ALGORITHM (Step by Step):
+-------------------------
+  recursiveInsertionSort(arr, n):
+    1. If n <= 1, return
+    2. recursiveInsertionSort(arr, n-1)   // Sort first n-1 elements
+    3. key = arr[n-1]
+    4. j = n - 2
+    5. While j >= 0 AND arr[j] > key:
+         arr[j+1] = arr[j]
+         j--
+    6. arr[j+1] = key
+
+DRY RUN:
+--------
+  arr = [4, 3, 1]
+
+  Call with n=3:
+    Call with n=2:
+      Call with n=1: return (base case)
+      key=3, compare with 4→shift → [4,4,1] → insert 3 → [3,4,1]
+    key=1, compare with 4→shift, 3→shift → [3,3,4] → insert 1 → [1,3,4]
+
+  Result: [1, 3, 4]  ✅
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n²)
+  Space: O(n) — recursion stack
+
+CODE (C++):
+-----------
+void recursiveInsertionSort(vector<int>& arr, int n) {
+    if (n <= 1) return;
+    recursiveInsertionSort(arr, n - 1);
+    int key = arr[n - 1];
+    int j = n - 2;
+    while (j >= 0 && arr[j] > key) {
+        arr[j + 1] = arr[j];
+        j--;
+    }
+    arr[j + 1] = key;
+}
+
+INTERVIEW TIP:
+--------------
+  If asked "what's the difference between recursive and iterative versions?":
+  Functionality is IDENTICAL. But recursive uses O(n) stack space.
+  In practice, iterative is better. Recursive is asked to test recursion skills.
+
+
+================================================================================
+                    SECTION 2: ARRAYS — EASY PROBLEMS
+================================================================================
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 8: LARGEST ELEMENT IN AN ARRAY
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-----------
+Given an array, find the largest (maximum) element. This is the simplest
+array problem — a warmup to get comfortable with array traversal.
+
+APPROACH & LOGIC:
+-----------------
+The idea is dead simple:
+  1. Assume the first element is the largest (max = arr[0])
+  2. Walk through every other element
+  3. If any element is bigger than current max, update max
+  4. At the end, max holds the largest element
+
+WHY NOT SORT AND PICK LAST?
+  Sorting takes O(n log n). Linear scan takes O(n). Always pick the
+  simpler, faster approach when you can.
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. Initialize max = arr[0]
+  2. Loop i from 1 to n-1:
+       - If arr[i] > max, set max = arr[i]
+  3. Return max
+
+DRY RUN:
+--------
+  arr = [3, 7, 2, 9, 1]
+
+  max = 3
+  i=1: 7 > 3 → max = 7
+  i=2: 2 > 7? No
+  i=3: 9 > 7 → max = 9
+  i=4: 1 > 9? No
+
+  Answer: 9  ✅
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n)
+  Space: O(1)
+
+CODE (C++):
+-----------
+int largestElement(vector<int>& arr) {
+    int maxi = arr[0];
+    for (int i = 1; i < arr.size(); i++) {
+        if (arr[i] > maxi) maxi = arr[i];
+    }
+    return maxi;
+}
+
+EDGE CASES:
+-----------
+  - Array with 1 element → return that element
+  - All elements same → return that value
+  - Negative numbers → works fine since we compare, not assume > 0
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 9: SECOND LARGEST ELEMENT IN AN ARRAY
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-----------
+Given an array, find the second largest element. This is trickier than it
+sounds — you need to handle duplicates and edge cases.
+
+APPROACH & LOGIC:
+-----------------
+BRUTE FORCE (O(n log n)): Sort → return arr[n-2]. But this fails if
+  there are duplicates at the end like [1, 5, 5].
+
+BETTER (Two passes, O(n)): Find max first, then find max excluding max.
+
+OPTIMAL (Single pass, O(n)): Track TWO variables: largest and secondLargest.
+  For each element:
+    - If it's bigger than largest → secondLargest = largest, largest = element
+    - Else if it's bigger than secondLargest AND not equal to largest →
+      secondLargest = element
+
+WHY THE "not equal to largest" CHECK?
+  Without it, duplicates of the largest would become the second largest.
+  Example: [5, 5, 3] → we want 3, not 5.
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. largest = arr[0], secondLargest = -1 (or INT_MIN)
+  2. Loop i from 1 to n-1:
+       - If arr[i] > largest:
+           secondLargest = largest
+           largest = arr[i]
+       - Else if arr[i] < largest AND arr[i] > secondLargest:
+           secondLargest = arr[i]
+  3. Return secondLargest
+
+DRY RUN:
+--------
+  arr = [12, 35, 1, 10, 34, 1]
+
+  largest = 12, second = -1
+  i=1: 35 > 12  → second=12, largest=35
+  i=2: 1 < 35, 1 > 12? No
+  i=3: 10 < 35, 10 > 12? No
+  i=4: 34 < 35, 34 > 12? YES → second=34
+  i=5: 1 < 35, 1 > 34? No
+
+  Answer: largest=35, secondLargest=34  ✅
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n)  — single pass
+  Space: O(1)
+
+CODE (C++):
+-----------
+int secondLargest(vector<int>& arr) {
+    int largest = arr[0];
+    int second = INT_MIN;
+    for (int i = 1; i < arr.size(); i++) {
+        if (arr[i] > largest) {
+            second = largest;
+            largest = arr[i];
+        } else if (arr[i] < largest && arr[i] > second) {
+            second = arr[i];
+        }
+    }
+    return second;
+}
+
+EDGE CASES:
+-----------
+  - All elements same [5,5,5] → no second largest, return -1 or INT_MIN
+  - Array with 2 elements [3,7] → second = 3
+  - Duplicates of max [5,5,3] → second = 3 (not 5)
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  PROBLEM 10: CHECK IF THE ARRAY IS SORTED
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-----------
+Given an array, check if it's sorted in non-decreasing order. This means
+every element should be <= the next element.
+
+"Non-decreasing" means duplicates are allowed: [1, 2, 2, 3] is sorted.
+"Strictly increasing" would NOT allow duplicates.
+
+APPROACH & LOGIC:
+-----------------
+The simplest check possible:
+  Walk through the array from left to right. For every pair of adjacent
+  elements, check if arr[i] > arr[i+1]. If yes at ANY point → NOT sorted.
+  If you finish the entire walk without finding such a pair → SORTED.
+
+Think of it like walking along a staircase: if you ever step DOWN,
+the staircase is not ascending.
+
+ALGORITHM (Step by Step):
+-------------------------
+  1. Loop i from 0 to n-2:
+       - If arr[i] > arr[i+1], return false
+  2. Return true
+
+DRY RUN:
+--------
+  arr = [1, 2, 3, 4, 5]
+  1<=2 ✓, 2<=3 ✓, 3<=4 ✓, 4<=5 ✓ → return true ✅
+
+  arr = [1, 3, 2, 4, 5]
+  1<=3 ✓, 3<=2 ✗ → return false ✅
+
+  arr = [1, 1, 1]
+  1<=1 ✓, 1<=1 ✓ → return true ✅ (non-decreasing allows duplicates)
+
+TIME & SPACE COMPLEXITY:
+------------------------
+  Time:  O(n)
+  Space: O(1)
+
+CODE (C++):
+-----------
+bool isSorted(vector<int>& arr) {
+    for (int i = 0; i < arr.size() - 1; i++) {
+        if (arr[i] > arr[i + 1]) return false;
+    }
+    return true;
+}
+
+EDGE CASES:
+-----------
+  - Single element array → always sorted (return true)
+  - All same elements [4,4,4] → sorted (return true)
+  - Descending array [5,4,3,2,1] → not sorted (return false)
+  - Two elements [2,1] → not sorted
+
+
+
+PROBLEM 11: REMOVE DUPLICATES FROM SORTED ARRAY
+-----------
+Given a SORTED array, remove duplicates IN-PLACE so that each element
+appears only once. Return the number of unique elements.
+
+Key constraint: You must do it in-place with O(1) extra space. The first
+k elements of the array should contain the unique elements.
+
+APPROACH & LOGIC:
+-----------------
+Since the array is SORTED, all duplicates are ADJACENT. This is key!
+
+Use TWO POINTERS:
+  - i = "placement pointer" (where the next unique element goes)
+  - j = "scanner" (scans through the entire array)
+
+Start with i=0 (first element is always unique). Then scan j from 1:
+  - If arr[j] != arr[i] → found a new unique element!
+    Increment i, place arr[j] at arr[i]
+  - If arr[j] == arr[i] → duplicate, skip it
+
+At the end, i+1 = count of unique elements.
+
+ALGORITHM:
+----------
+  1. i = 0
+  2. Loop j from 1 to n-1:
+       - If arr[j] != arr[i]:
+           i++
+           arr[i] = arr[j]
+  3. Return i + 1
+
+DRY RUN:
+--------
+  arr = [1, 1, 2, 2, 2, 3, 3]
+
+  i=0, j=1: arr[1]=1 == arr[0]=1 → skip
+  i=0, j=2: arr[2]=2 != arr[0]=1 → i=1, arr[1]=2 → [1,2,2,2,2,3,3]
+  i=1, j=3: arr[3]=2 == arr[1]=2 → skip
+  i=1, j=4: arr[4]=2 == arr[1]=2 → skip
+  i=1, j=5: arr[5]=3 != arr[1]=2 → i=2, arr[2]=3 → [1,2,3,2,2,3,3]
+  i=2, j=6: arr[6]=3 == arr[2]=3 → skip
+
+  Return i+1 = 3. First 3 elements: [1, 2, 3]  ✅
+
+TIME & SPACE:
+  Time: O(n) | Space: O(1)
+
+CODE (C++):
+-----------
+int removeDuplicates(vector<int>& arr) {
+    int i = 0;
+    for (int j = 1; j < arr.size(); j++) {
+        if (arr[j] != arr[i]) {
+            i++;
+            arr[i] = arr[j];
+        }
+    }
+    return i + 1;
+}
+
+
+PROBLEM 12: LEFT ROTATE ARRAY BY ONE
+-----------
+Given an array, rotate it to the left by ONE position.
+[1, 2, 3, 4, 5] → [2, 3, 4, 5, 1]
+
+The first element goes to the end, everything else shifts left.
+
+APPROACH & LOGIC:
+-----------------
+Super simple:
+  1. Store the first element in a temp variable
+  2. Shift every element one position to the left
+  3. Place the stored element at the last position
+
+ALGORITHM:
+----------
+  1. temp = arr[0]
+  2. Loop i from 1 to n-1: arr[i-1] = arr[i]
+  3. arr[n-1] = temp
+
+DRY RUN:
+--------
+  arr = [1, 2, 3, 4, 5]
+  temp = 1
+  Shift: [2, 3, 4, 5, 5]
+  Place temp at end: [2, 3, 4, 5, 1]  ✅
+
+TIME & SPACE:
+  Time: O(n) | Space: O(1)
+
+CODE (C++):
+-----------
+void leftRotateByOne(vector<int>& arr) {
+    int temp = arr[0];
+    for (int i = 1; i < arr.size(); i++) {
+        arr[i - 1] = arr[i];
+    }
+    arr[arr.size() - 1] = temp;
+}
+
+
+PROBLEM 13: LEFT ROTATE ARRAY BY K PLACES
+-----------
+Given an array and a number K, rotate it to the left by K positions.
+[1, 2, 3, 4, 5], K=2 → [3, 4, 5, 1, 2]
+
+APPROACH & LOGIC:
+-----------------
+BRUTE FORCE: Rotate by 1, K times → O(n*k). Too slow.
+
+OPTIMAL — Reversal Algorithm (O(n), O(1) space):
+  The trick: three reversals!
+  
+  Step 1: Reverse first K elements
+  Step 2: Reverse remaining n-K elements  
+  Step 3: Reverse the entire array
+  
+  Why does this work? Think of it visually:
+    arr = [1, 2, 3, 4, 5], k=2
+    
+    After reverse first 2:  [2, 1, 3, 4, 5]
+    After reverse last 3:   [2, 1, 5, 4, 3]
+    After reverse all:      [3, 4, 5, 1, 2]  ✅
+
+IMPORTANT: Handle k >= n by doing k = k % n.
+  If k=7 and n=5, rotating 7 times = rotating 2 times.
+
+ALGORITHM:
+----------
+  1. k = k % n
+  2. Reverse arr[0..k-1]
+  3. Reverse arr[k..n-1]
+  4. Reverse arr[0..n-1]
+
+DRY RUN:
+--------
+  arr = [1, 2, 3, 4, 5, 6, 7], k=3
+
+  k = 3 % 7 = 3
+  Reverse first 3: [3, 2, 1, 4, 5, 6, 7]
+  Reverse last 4:  [3, 2, 1, 7, 6, 5, 4]
+  Reverse all:     [4, 5, 6, 7, 1, 2, 3]  ✅
+
+TIME & SPACE:
+  Time: O(n) | Space: O(1)
+
+CODE (C++):
+-----------
+void leftRotateByK(vector<int>& arr, int k) {
+    int n = arr.size();
+    k = k % n;
+    reverse(arr.begin(), arr.begin() + k);
+    reverse(arr.begin() + k, arr.end());
+    reverse(arr.begin(), arr.end());
+}
+
+INTERVIEW TIP:
+  This reversal trick is asked A LOT. Memorize the pattern:
+  "Reverse first K, reverse rest, reverse all."
+  Works for both left and right rotation (just swap the order).
+
+
+PROBLEM 14: MOVE ALL ZEROES TO END
+-----------
+Given an array, move all 0s to the end while maintaining the relative
+order of the non-zero elements.
+[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]
+
+APPROACH & LOGIC:
+-----------------
+TWO POINTER approach:
+  - Pointer 'j' = points to the first zero (where next non-zero should go)
+  - Pointer 'i' = scans the array looking for non-zero elements
+
+When 'i' finds a non-zero element, swap it with position 'j', then
+move 'j' forward.
+
+Think of 'j' as a "slot" waiting for the next non-zero value.
+Every time we find a non-zero, we fill the slot and open the next one.
+
+ALGORITHM:
+----------
+  1. Find the first 0 in the array → set j = that index
+  2. Loop i from j+1 to n-1:
+       - If arr[i] != 0:
+           swap(arr[i], arr[j])
+           j++
+
+  Alternative (simpler):
+  1. j = 0
+  2. Loop i from 0 to n-1:
+       - If arr[i] != 0:
+           swap(arr[i], arr[j])
+           j++
+
+DRY RUN:
+--------
+  arr = [0, 1, 0, 3, 12], j=0
+
+  i=0: arr[0]=0 → skip
+  i=1: arr[1]=1 != 0 → swap(arr[1], arr[0]) → [1, 0, 0, 3, 12], j=1
+  i=2: arr[2]=0 → skip
+  i=3: arr[3]=3 != 0 → swap(arr[3], arr[1]) → [1, 3, 0, 0, 12], j=2
+  i=4: arr[4]=12 != 0 → swap(arr[4], arr[2]) → [1, 3, 12, 0, 0], j=3
+
+  Result: [1, 3, 12, 0, 0]  ✅
+
+TIME & SPACE:
+  Time: O(n) | Space: O(1)
+
+CODE (C++):
+-----------
+void moveZeroes(vector<int>& arr) {
+    int j = 0;
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] != 0) {
+            swap(arr[i], arr[j]);
+            j++;
+        }
+    }
+}
+
+EDGE CASES:
+  - No zeroes → array unchanged
+  - All zeroes → array unchanged
+  - Zeroes only at end → already correct
+
+
+PROBLEM 15: LINEAR SEARCH
+-----------
+Given an array and a target value, find if the target exists. If yes,
+return its index. If no, return -1.
+
+This is the simplest search algorithm — just check every element one by one.
+
+APPROACH & LOGIC:
+-----------------
+Walk through the array from start to end. At each element, check if it
+matches the target. If yes → return the index. If you reach the end
+without finding it → return -1.
+
+No sorting needed. No special data structure. Just brute force.
+
+ALGORITHM:
+----------
+  1. Loop i from 0 to n-1:
+       - If arr[i] == target, return i
+  2. Return -1
+
+DRY RUN:
+--------
+  arr = [4, 7, 2, 9, 1], target = 9
+  i=0: 4==9? No
+  i=1: 7==9? No
+  i=2: 2==9? No
+  i=3: 9==9? YES → return 3  ✅
+
+  target = 5
+  i=0 to 4: none match → return -1  ✅
+
+TIME & SPACE:
+  Time: O(n) | Space: O(1)
+
+CODE (C++):
+-----------
+int linearSearch(vector<int>& arr, int target) {
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] == target) return i;
+    }
+    return -1;
+}
+
+WHEN TO USE:
+  - Unsorted arrays (can't use binary search)
+  - Small arrays (overhead of sorting isn't worth it)
+  - One-time search (if searching multiple times, sort first)
+
+
+================================================================================
+  END OF BATCH 3 — Problems 11 to 15
+  Next: Batch 4 — Union of Sorted Arrays, Find Missing Number,
+                   Max Consecutive Ones, Single Number, Longest Subarray Sum K
+================================================================================
