@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int lis(vector<int>& nums, int i, int prevIdx) {` },
@@ -62,6 +62,56 @@ function ArrViz({ step }) {
     );
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find the length of the **longest strictly increasing subsequence**. Not contiguous! E.g., [10,9,2,5,3,7,101,18] → 4 ([2,3,7,101]).
+
+## How to Think About It
+For each element, **skip it** or **take it** (if greater than previous taken).
+
+### DP Approach
+dp[i] = length of LIS ending at index i
+For each j < i: if nums[j] < nums[i], dp[i] = max(dp[i], dp[j] + 1)
+
+**Think of it like:** Building the tallest tower by selecting blocks in order, where each block must be taller than the previous.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for [10,9,2,5,3,7,101,18]
+
+- dp[0]=1 (10)
+- dp[1]=1 (9 — can't extend any)
+- dp[2]=1 (2 — smallest)
+- dp[3]=2 (2<5 → extend from 2)
+- dp[4]=2 (2<3 → extend from 2)
+- dp[5]=3 (2<3<7 → extend from 3)
+- dp[6]=4 (2<3<7<101 → extend from 7)
+- dp[7]=4 (2<3<7<18 → extend from 7)
+
+Answer: max(dp) = **4** ✅`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### O(n²) DP
+    for i: for j < i: if nums[j] < nums[i]: dp[i] = max(dp[i], dp[j]+1)
+
+### O(n log n) with Binary Search
+Maintain a "tails" array:
+- If num > last element: append (extends LIS)
+- Else: binary search for position to replace
+
+Length of tails array = LIS length!
+
+## Time & Space Complexity
+- **Time:** O(n²) DP, O(n log n) with patience sorting
+- **Space:** O(n) for dp/tails array`
+    },
+];
+
 const DA = [10, 9, 2, 5, 3, 7, 101, 18];
 export default function LIS() {
     const [aT, setAT] = useState(DA.join(","));
@@ -72,6 +122,7 @@ export default function LIS() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Longest Increasing Subsequence" subtitle="Skip / Take · LC #300">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={aT} onChange={setAT} onRun={run} onReset={reset} placeholder="10,9,2,5,3,7,101,18" label="Array (2–6 el):" />
             <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "920px", flexWrap: "wrap", alignItems: "flex-start" }}>
                 <CodePanel code={CODE} activeLineId={step.cl} accentColor={pc} fileName="lis.cpp" />

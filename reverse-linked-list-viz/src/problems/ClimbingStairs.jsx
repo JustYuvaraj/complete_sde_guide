@@ -3,6 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection,
+    ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -203,6 +204,71 @@ function generateAll(N) {
     return { steps, treeNodes, treeEdges, resolvedMaps, TH, N: N };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+You can climb 1 or 2 stairs at a time. How many distinct ways to reach step n?
+
+## How to Think About It
+**Ask yourself:** "To reach step n, where could I have come from?"
+
+### The Key Insight
+- To reach step n, I either came from step **n-1** (took 1 step) or step **n-2** (took 2 steps)
+- So: ways(n) = ways(n-1) + ways(n-2)
+- This is exactly the **Fibonacci** sequence!
+
+**Think of it like:** At every stair, you have 2 choices. You're counting ALL possible paths, and the total is the sum of paths from the two previous stairs.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for climb(5)
+
+1. climb(5) = climb(4) + climb(3)
+2. climb(4) = climb(3) + climb(2)
+3. climb(3) = climb(2) + climb(1)
+4. climb(2) = climb(1) + climb(0)
+5. climb(1) = climb(0) + climb(-1) = 1 + 0 = 1
+6. climb(0) = **BASE CASE** = 1 (you're already there)
+7. climb(-1) = **BASE CASE** = 0 (invalid)
+
+### Results bubble up:
+- climb(2) = 2, climb(3) = 3, climb(4) = 5, climb(5) = **8** ✅
+
+### The Pattern: 1, 1, 2, 3, 5, 8...
+This IS Fibonacci! F(1)=1, F(2)=2, F(3)=3, F(4)=5, F(5)=8`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1: Success Base Case
+    if (n == 0) return 1;
+**WHY:** Reaching step 0 means you've successfully climbed all stairs — that's 1 valid way.
+
+### Line 2: Failure Base Case
+    if (n < 0) return 0;
+**WHY:** Negative step means you overshot — invalid path, contributes 0 ways.
+
+### Line 4: Take 1 Step
+    int left = climb(n - 1);
+**WHY:** Count all ways to climb remaining (n-1) stairs after taking 1 step.
+
+### Line 5: Take 2 Steps
+    int right = climb(n - 2);
+**WHY:** Count all ways to climb remaining (n-2) stairs after taking 2 steps.
+
+### Line 7: Combine
+    return left + right;
+**WHY:** Total ways = ways via 1-step + ways via 2-step. Every path must use one of these.
+
+## Time & Space Complexity
+- **Time:** O(2^n) without memo — O(n) with memo or DP
+- **Space:** O(n) recursion depth
+- **Optimal:** Bottom-up DP with O(1) space using two variables`
+    },
+];
+
 const DEFAULT_N = 5;
 
 export default function ClimbingStairs() {
@@ -235,6 +301,7 @@ export default function ClimbingStairs() {
             title="Climbing Stairs — Code ↔ Visual Sync"
             subtitle={`n = ${data.N} stairs · Take 1 or 2 steps at a time · How many ways?`}
         >
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection
                 value={inputText}
                 onChange={setInputText}

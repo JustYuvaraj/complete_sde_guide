@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
-    MessageBar, ControlBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection,
+    MessageBar, ControlBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection, ExplainPanel,
 } from "../shared/Components";
 
 const DEFAULT_ARR = [38, 27, 43, 3, 9, 82, 10];
@@ -163,6 +163,56 @@ function generateSteps(initArr) {
     return steps;
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Sort an array using **Merge Sort** — a stable, divide-and-conquer algorithm guaranteed O(n log n).
+
+## Key Insight
+1. **Divide** the array in half
+2. **Recursively sort** each half
+3. **Merge** two sorted halves into one sorted array
+
+## Mental Model
+Think of sorting a deck of cards: split it in half, sort each half, then interleave them back together by always picking the smaller card.`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+[5,3,1,4,2]
+1. Split: [5,3] and [1,4,2]
+2. [5,3] → [5] [3] → merge → [3,5]
+3. [1,4,2] → [1] [4,2] → [4] [2] → merge → [2,4] → merge → [1,2,4]
+4. Merge [3,5] and [1,2,4] → [1,2,3,4,5]
+
+## Merge Step
+Two pointers on sorted halves. Compare, take smaller, advance that pointer. Append remaining.`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+mergeSort(arr, lo, hi):
+  if lo >= hi: return
+  mid = (lo + hi) / 2
+  mergeSort(arr, lo, mid)
+  mergeSort(arr, mid+1, hi)
+  merge(arr, lo, mid, hi)
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time | **O(n log n)** — always |
+| Space | **O(n)** — temp array for merging |
+
+## vs QuickSort
+- Merge Sort: stable, guaranteed O(n log n), uses O(n) space
+- QuickSort: unstable, O(n²) worst case, but O(1) extra space`
+    }
+];
+
 export default function MergeSort() {
     const { theme, isDark } = useTheme();
     const [inputText, setInputText] = useState(DEFAULT_ARR.join(","));
@@ -201,6 +251,7 @@ export default function MergeSort() {
             title="Merge Sort — Code ↔ Visual Sync"
             subtitle={`arr = [${arr.join(",")}] · Divide & Conquer · O(n log n)`}
         >
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection
                 value={inputText}
                 onChange={setInputText}

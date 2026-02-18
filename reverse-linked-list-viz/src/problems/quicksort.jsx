@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
-    MessageBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection,
+    MessageBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection, ExplainPanel,
 } from "../shared/Components";
 
 const DEFAULT_ARR = [10, 80, 30, 90, 40, 50, 70];
@@ -141,6 +141,63 @@ function generateSteps(initArr) {
     return steps;
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Sort an array in-place. QuickSort is the most commonly used sorting algorithm — average O(n log n) with small constants.
+
+## Key Insight
+**Partition**: pick a pivot, rearrange so elements ≤ pivot are left, > pivot are right. Pivot is now in its final position. Recurse on both halves.
+
+## Mental Model
+1. Choose pivot (often last element)
+2. Partition: scan array, swap elements to correct side
+3. Pivot lands at its correct sorted position
+4. Recurse on left half and right half
+5. Base case: subarray has 0 or 1 elements`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+[3,6,2,8,1,4] pivot=4
+1. i scans, swaps smaller elements to front
+2. After partition: [3,2,1,**4**,6,8]
+3. Recurse on [3,2,1] and [6,8]
+4. Each sub-partition puts one more element in final position
+
+## Partition Mechanics
+- Maintain boundary i between ≤pivot and >pivot zones
+- Scan j from left to right
+- If arr[j] ≤ pivot: swap arr[i] and arr[j], advance i`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+quickSort(arr, lo, hi):
+  if lo >= hi: return
+  p = partition(arr, lo, hi)
+  quickSort(arr, lo, p-1)
+  quickSort(arr, p+1, hi)
+
+partition(arr, lo, hi):
+  pivot = arr[hi], i = lo
+  for j = lo to hi-1:
+    if arr[j] <= pivot: swap(arr[i], arr[j]), i++
+  swap(arr[i], arr[hi])
+  return i
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time (avg) | **O(n log n)** |
+| Time (worst) | **O(n²)** — already sorted |
+| Space | **O(log n)** — recursion stack |`
+    }
+];
+
 export default function QuickSort() {
     const { theme, isDark } = useTheme();
     const [inputText, setInputText] = useState(DEFAULT_ARR.join(","));
@@ -173,6 +230,7 @@ export default function QuickSort() {
             title="Quick Sort — Lomuto Partition"
             subtitle={`arr = [${arr.join(",")}] · Pick pivot → partition → recurse`}
         >
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection
                 value={inputText}
                 onChange={setInputText}

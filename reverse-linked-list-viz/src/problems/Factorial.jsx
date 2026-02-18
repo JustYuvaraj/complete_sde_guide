@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -75,6 +75,65 @@ function BoxViz({ step }) {
     );
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Compute **n!** = n × (n-1) × (n-2) × ... × 2 × 1
+Example: 5! = 5 × 4 × 3 × 2 × 1 = 120
+
+## How to Think About It
+**Ask yourself:** "Can I express n! in terms of a smaller factorial?"
+
+### The Key Insight
+- 5! = 5 × **4!**
+- 4! = 4 × **3!**
+- 3! = 3 × **2!**
+- ...until 1! = 1 (base case)
+
+**Think of it like:** A chain of multiplication. You ask your friend "what's (n-1)!?" and multiply their answer by n. Your friend asks their friend, and so on, until someone knows the answer: 1! = 1.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for factorial(5)
+
+1. factorial(5) → needs 5 × factorial(4)
+2. factorial(4) → needs 4 × factorial(3)
+3. factorial(3) → needs 3 × factorial(2)
+4. factorial(2) → needs 2 × factorial(1)
+5. factorial(1) → **BASE CASE** returns 1
+6. Now unwind: 2×1=2, 3×2=6, 4×6=24, 5×24=**120** ✅
+
+### Two Phases of Recursion
+- **Winding phase:** Stack grows as calls are made (5→4→3→2→1)
+- **Unwinding phase:** Results multiply back up (1→2→6→24→120)
+
+### Why Recursion Here?
+This is the **simplest** recursive pattern — one call per level. It creates a linear chain, not a tree.`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1: Function Signature
+    int factorial(int n)
+Takes n, returns n!
+
+### Line 2: Base Case
+    if (n <= 1) return 1;
+**WHY:** 0! = 1 and 1! = 1 by definition. This stops the recursion.
+
+### Line 3: Recursive Case
+    return n * factorial(n - 1);
+**WHY n-1?** n! = n × (n-1)!. We reduce the problem by 1 each time, guaranteeing we reach the base case.
+
+## Time & Space Complexity
+- **Time:** O(n) — exactly n recursive calls
+- **Space:** O(n) — recursion depth is n (each call uses stack space)
+- **Iterative version:** O(1) space with a simple loop`
+    },
+];
+
 const DN = 5;
 export default function Factorial() {
     const [nT, setNT] = useState(String(DN));
@@ -86,6 +145,7 @@ export default function Factorial() {
 
     return (
         <VizLayout title="Factorial" subtitle="n × (n-1) × … × 1 · Simple recursion">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={nT} onChange={setNT} onRun={run} onReset={reset} placeholder="5" label="n (0–8):" />
             <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "920px", flexWrap: "wrap", alignItems: "flex-start" }}>
                 <CodePanel code={CODE} activeLineId={step.cl} accentColor={pc} fileName="factorial.cpp" />

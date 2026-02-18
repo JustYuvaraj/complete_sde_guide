@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int coinChange(vector<int>& coins, int amount) {` },
@@ -49,6 +49,56 @@ function gen(coins, amount) {
     return { steps, answer: ans };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find the **minimum number of coins** to make a target amount. Coins can be used unlimited times. E.g., coins=[1,5,11], amount=15 → 3 coins (5+5+5).
+
+## How to Think About It
+**For each amount**, try subtracting each coin. Take the minimum.
+
+### Recursion: coinChange(amount)
+- Base: amount=0 → 0 coins needed
+- Try each coin c: 1 + coinChange(amount - c)
+- Return minimum across all coins
+
+**Think of it like:** Making change at a store. Try each coin denomination and pick the fewest total.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## DP Bottom-Up Approach
+
+    dp[i] = min coins for amount i
+    dp[0] = 0
+    dp[i] = min(dp[i-c] + 1) for each coin c where c ≤ i
+
+### For coins=[1,5,11], amount=15:
+- dp[1]=1, dp[2]=2, dp[3]=3, dp[4]=4
+- dp[5]=1 (one 5-coin!)
+- dp[10]=2, dp[11]=1 (one 11-coin!)
+- dp[15] = min(dp[14]+1, dp[10]+1, dp[4]+1) = min(4, 3, 5) = **3** ✅`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Base Case
+    if (amount == 0) return 0;
+    if (amount < 0) return -1;
+
+### Recursive Choice
+    for each coin: result = min(result, 1 + solve(amount - coin))
+
+### Memoization
+Without memo: exponential. With memo/DP: O(amount × coins).
+
+## Time & Space Complexity
+- **Time:** O(amount × n) where n = number of coin types
+- **Space:** O(amount) for DP array`
+    },
+];
+
 const DC = [1, 5, 11], DA = 15;
 export default function CoinChange() {
     const { theme } = useTheme();
@@ -60,6 +110,7 @@ export default function CoinChange() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Coin Change" subtitle="Min coins · Try all denominations · LC #322">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>Coins:</span>
                 <input value={cT} onChange={e => setCT(e.target.value)} style={{ flex: 1, minWidth: "80px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 10px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

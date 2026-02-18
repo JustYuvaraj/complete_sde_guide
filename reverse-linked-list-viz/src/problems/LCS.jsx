@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int lcs(string& a, string& b, int i, int j) {` },
@@ -66,6 +66,55 @@ function StringViz({ step }) {
     );
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find the longest subsequence common to two strings. E.g., "abcde" and "ace" → 3 ("ace").
+
+## How to Think About It
+Compare characters one by one:
+- If s1[i] == s2[j]: **match!** Both advance, +1 to length
+- If s1[i] ≠ s2[j]: **skip** one — try skipping from s1 or s2, take the max
+
+**Think of it like:** Two people reading different books, finding the longest sequence of words they both have (in order, not necessarily consecutive).`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## DP Table for "abcde" and "ace"
+
+|   | "" | a | c | e |
+|---|---|---|---|---|
+| "" | 0 | 0 | 0 | 0 |
+| a | 0 | **1** | 1 | 1 |
+| b | 0 | 1 | 1 | 1 |
+| c | 0 | 1 | **2** | 2 |
+| d | 0 | 1 | 2 | 2 |
+| e | 0 | 1 | 2 | **3** |
+
+Answer: dp[5][3] = **3** → "ace" ✅`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Match
+    if (s1[i] == s2[j]) dp[i][j] = dp[i-1][j-1] + 1
+**WHY i-1,j-1?** Both characters consumed in the match.
+
+### Skip
+    else dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+**WHY max?** Try skipping from either string, take better result.
+
+### Reconstruct LCS
+Trace back from dp[m][n]: if chars match, it's in the LCS.
+
+## Time & Space Complexity
+- **Time:** O(m × n) where m, n = string lengths
+- **Space:** O(m × n), or O(min(m,n)) with optimization`
+    },
+];
+
 const DA = "abcde", DB = "ace";
 export default function LCS() {
     const { theme } = useTheme();
@@ -77,6 +126,7 @@ export default function LCS() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Longest Common Subsequence" subtitle="Match or skip · LC #1143">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>A:</span>
                 <input value={aT} onChange={e => setAT(e.target.value)} style={{ width: "80px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int targetSum(vector<int>& nums, int t, int i) {` },
@@ -58,6 +58,54 @@ function gen(nums, target) {
 }
 
 const DA = [1, 1, 1, 1, 1], DT = 3;
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Given an array of integers and a target, assign + or − to each element. Count the number of ways to reach the target sum.
+
+## Key Insight
+Each element has 2 choices: add or subtract. This creates a binary tree of decisions. Use **DFS/recursion** to try both.
+
+## Mental Model
+1. At each element, branch into +num and -num
+2. Recurse to the next element with updated sum
+3. Base case: all elements used → does sum == target?
+4. Count all paths that reach the target`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+nums = [1,1,1,1,1], target = 3
+1. Each element: choose + or −
+2. Need sum = 3, so need 4 pluses and 1 minus (4−1=3)
+3. Choose which element gets −: C(5,1) = 5 ways
+
+## Tree Structure
+Each level = one element, branches = +/−. Leaves at depth n, count those with sum == target.`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+dfs(nums, i, sum, target):
+  if i == n: return sum == target ? 1 : 0
+  return dfs(i+1, sum + nums[i]) +
+         dfs(i+1, sum - nums[i])
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time (brute) | **O(2ⁿ)** — binary tree |
+| Time (memo) | **O(n × sum)** — with memoization |
+| Space | **O(n)** — recursion depth |
+
+## DP Optimization
+Convert to subset sum: find subsets summing to (sum+target)/2.`
+    }
+];
+
 export default function TargetSum() {
     const { theme } = useTheme();
     const [aT, setAT] = useState(DA.join(",")), [tT, setTT] = useState(String(DT));
@@ -68,6 +116,7 @@ export default function TargetSum() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Target Sum" subtitle="+/- choices · 2^n paths · LC #494">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>nums:</span>
                 <input value={aT} onChange={e => setAT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ flex: 1, minWidth: "100px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 10px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

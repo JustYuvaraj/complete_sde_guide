@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int knapsack(int W, vector<int>& wt, vector<int>& val, int i){` },
@@ -43,6 +43,57 @@ function gen(W, wts, vals) {
     return { steps, answer: ans };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Given items with weights and values, maximize value within a weight capacity. Each item can be used **at most once**.
+
+## How to Think About It
+For each item: **take it** or **skip it**.
+
+### Decision Tree
+- Take item i: value += value[i], capacity -= weight[i], move to i+1
+- Skip item i: move to i+1 with unchanged capacity
+
+**Think of it like:** Packing a bag for a trip. Each item has a weight and importance. Maximize importance without exceeding weight limit.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## DP Table
+
+    dp[i][w] = max value using items 0..i with capacity w
+
+### Transition
+- Skip item i: dp[i][w] = dp[i-1][w]
+- Take item i (if weight[i] ≤ w): dp[i][w] = dp[i-1][w-weight[i]] + value[i]
+- dp[i][w] = max(skip, take)
+
+### Space Optimization
+Can use 1D array, iterating weight from high to low:
+    for w = W down to weight[i]:
+        dp[w] = max(dp[w], dp[w-weight[i]] + value[i])`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Base Case
+    dp[0][w] = 0 for all w (no items = 0 value)
+    dp[i][0] = 0 for all i (no capacity = 0 value)
+
+### Why iterate w from high to low (1D)?
+Prevents using same item twice. High-to-low ensures dp[w-weight[i]] is from previous item's row.
+
+### Trace Back Solution
+To find WHICH items: check if dp[i][w] != dp[i-1][w]. If different, item i was taken.
+
+## Time & Space Complexity
+- **Time:** O(n × W) where n = items, W = capacity
+- **Space:** O(W) with 1D optimization`
+    },
+];
+
 const DW = 7, DWT = [1, 3, 4, 5], DV = [1, 4, 5, 7];
 export default function Knapsack() {
     const { theme } = useTheme();
@@ -54,6 +105,7 @@ export default function Knapsack() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="0/1 Knapsack" subtitle="Take or skip · Maximize value · Classic DP">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>W:</span>
                 <input value={wT} onChange={e => setWT(e.target.value)} style={{ width: "40px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

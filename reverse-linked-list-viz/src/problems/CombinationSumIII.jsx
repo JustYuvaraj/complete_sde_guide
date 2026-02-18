@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -62,6 +62,66 @@ function gen(k, n) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find all combinations of **k numbers** from 1-9 that sum to **n**. Each number used at most once.
+
+## How to Think About It
+This is a **constrained subset** problem with TWO conditions:
+1. Exactly **k** numbers in the combination
+2. They must sum to exactly **n**
+
+### Fixed Candidate Pool: {1, 2, 3, 4, 5, 6, 7, 8, 9}
+No duplicates possible since candidates are 1-9. Just pick k of them that sum to n.
+
+**Think of it like:** Choosing k playing cards (numbered 1-9) whose values add up to n.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for k=3, n=7
+
+1. Pick 1, Pick 2, Pick 3: sum=6 ≠ 7, need 1 more but next is 4 (too big)
+2. Pick 1, Pick 2, Pick 4: sum=7 = n → **FOUND** [1,2,4] ✅
+3. Pick 1, Pick 2, Pick 5: sum=8 > 7 → **PRUNE**
+4. Pick 1, Pick 3, Pick 3: can't (start from 4), Pick 4: sum=8 → skip
+5. ...no more valid combos
+
+Result: [[1,2,4]] ✅
+
+### Pruning Conditions
+- **cur.size() == k && n == 0:** Found valid combo!
+- **cur.size() == k:** Already have k numbers but sum ≠ n, stop
+- **n < 0:** Sum exceeded target, stop
+- **i > remaining:** Number too big for remaining sum`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 2: Found!
+    if (cur.size()==k && n==0) { res.push_back(cur); return; }
+**WHY both conditions?** We need exactly k numbers AND they must sum to exactly n.
+
+### Line 3: Prune
+    if (cur.size()==k || n<0) return;
+**WHY:** Either we've picked k numbers (but sum wasn't right) or exceeded target.
+
+### Line 4: Loop 1 to 9
+    for (int i = start; i <= 9; i++)
+**WHY start to 9?** Candidates are always 1-9. Start prevents reusing earlier numbers.
+
+### Line 6: Recurse with i+1
+    combIII(k, n-i, i+1, cur, res);
+**WHY n-i?** Subtract the picked number from remaining target. i+1 ensures no reuse.
+
+## Time & Space Complexity
+- **Time:** O(C(9,k)) — at most C(9,k) combinations to explore
+- **Space:** O(k) recursion depth`
+    },
+];
+
 const DK = 3, DN = 7;
 export default function CombinationSumIII() {
     const { theme } = useTheme();
@@ -73,6 +133,7 @@ export default function CombinationSumIII() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Combination Sum III" subtitle="Pick k from 1–9, sum=n · LC #216">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>k:</span>
                 <input value={kT} onChange={e => setKT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ width: "40px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

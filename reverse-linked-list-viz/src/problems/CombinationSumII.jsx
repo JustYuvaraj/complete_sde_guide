@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -60,6 +60,59 @@ function gen(cands, target) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Like Combination Sum but each number can only be used **once**, and the array may contain **duplicates**. Find unique combos summing to target.
+
+## How to Think About It
+This combines TWO techniques:
+1. **Use once:** Recurse with i+1 (not i) so each element is picked at most once
+2. **Skip duplicates:** Sort + skip same value at same recursion level
+
+**Think of it like:** You have a bag of coins (some identical). Pick coins that sum to target, but you can't use any single coin twice, and don't count the same combination twice.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for [10,1,2,7,6,1,5], target=8
+
+1. Sort: [1,1,2,5,6,7,10]
+2. Pick 1 → Pick 1 → Pick 2 → t=4, Pick 5 → t=-1 → **PRUNE**
+3. Back, Pick 6 → t=-2 → **PRUNE**, try more...
+4. Eventually find [1,1,6] (t=0) → **FOUND** ✅
+5. Find [1,2,5], [1,7], [2,6] ✅
+
+### Three Pruning Rules
+- **t < 0:** Overshot target → prune
+- **c[i] > t:** Current candidate too big (sorted) → break
+- **i > start && c[i] == c[i-1]:** Duplicate at same level → skip`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 2: Found!
+    if (t == 0) { res.push_back(cur); return; }
+
+### Line 4: Skip Duplicates
+    if (i > start && c[i] == c[i-1]) continue;
+**WHY:** Same value already tried at this level. Skip to avoid duplicate combos.
+
+### Line 5: Early Break
+    if (c[i] > t) break;
+**WHY:** Array is sorted. If current value exceeds remaining target, all later values will too.
+
+### Line 7: Recurse with i+1
+    combSumII(c, t-c[i], i+1, cur, res);
+**WHY i+1?** Each element can be used only once, so move to next index.
+
+## Time & Space Complexity
+- **Time:** O(2^n) in worst case
+- **Space:** O(n) recursion depth`
+    },
+];
+
 const DC = [10, 1, 2, 7, 6, 1, 5], DT = 8;
 export default function CombinationSumII() {
     const { theme } = useTheme();
@@ -71,6 +124,7 @@ export default function CombinationSumII() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Combination Sum II" subtitle="Each element once · Skip duplicates · LC #40">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>Cands:</span>
                 <input value={cT} onChange={e => setCT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ flex: 1, minWidth: "100px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 10px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

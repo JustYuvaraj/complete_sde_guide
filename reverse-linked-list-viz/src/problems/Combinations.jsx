@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `void combine(int n, int k, int start,` },
@@ -51,6 +51,62 @@ function gen(n, k) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Return all combinations of **k** numbers chosen from **1 to n**. Order doesn't matter. E.g., n=4, k=2 → [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
+
+## How to Think About It
+This is the classic **nCr** (n choose r) problem.
+
+**Ask yourself:** "For each number, do I include it or not?"
+
+### Why Loop from start?
+To avoid duplicates like [1,2] and [2,1], we only pick numbers **greater than** what we've already picked.
+
+**Think of it like:** Picking k players from a team of n. You always pick in ascending order of jersey number to avoid counting the same team twice.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for n=4, k=2
+
+1. Pick 1, then try 2 → [1,2] 🎯 size=k, **FOUND**
+2. Back, try 3 → [1,3] 🎯 **FOUND**
+3. Back, try 4 → [1,4] 🎯 **FOUND**
+4. Back to start, pick 2, try 3 → [2,3] 🎯 **FOUND**
+5. Back, try 4 → [2,4] 🎯 **FOUND**
+6. Back, pick 3, try 4 → [3,4] 🎯 **FOUND**
+
+Result: C(4,2) = **6** combinations ✅
+
+### Pruning Optimization
+If remaining numbers (n-i+1) < remaining slots (k-cur.size), we can't fill the combination. Break early!`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 2-3: Base Case
+    if (cur.size() == k) { res.push_back(cur); return; }
+**WHY:** We've picked exactly k numbers. Save this combination.
+
+### Line 5: Loop from start to n
+    for (int i = start; i <= n; i++)
+**WHY start?** Only pick numbers larger than the last picked. This ensures combinations (not permutations).
+
+### Line 6-8: Pick + Recurse + Backtrack
+    cur.push_back(i);
+    combine(n, k, i+1, cur, res);
+    cur.pop_back();
+**WHY i+1?** After picking i, only consider numbers > i to maintain sorted order.
+
+## Time & Space Complexity
+- **Time:** O(k × C(n,k)) — C(n,k) combinations, each copied in O(k)
+- **Space:** O(k) recursion depth`
+    },
+];
+
 const DN = 4, DK = 2;
 export default function Combinations() {
     const { theme } = useTheme();
@@ -62,6 +118,7 @@ export default function Combinations() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Combinations (nCr)" subtitle="Pick r from 1..n · LC #77">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>n:</span>
                 <input value={nT} onChange={e => setNT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ width: "40px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

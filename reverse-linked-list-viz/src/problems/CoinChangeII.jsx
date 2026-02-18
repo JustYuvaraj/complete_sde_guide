@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int change(vector<int>& coins, int amount, int i) {` },
@@ -45,6 +45,61 @@ function gen(coins, amount) {
     return { steps, answer: ans };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+**Count** the number of ways to make an amount using given coins (unlimited use). E.g., coins=[1,2,5], amount=5 → 4 ways.
+
+## How is it different from Coin Change I?
+- Coin Change I: **minimum** coins
+- Coin Change II: **count** of combinations
+
+### Key: Combinations, not Permutations!
+[1,2,2] and [2,1,2] are the SAME combination. To avoid counting permutations, process coins in order.
+
+**Think of it like:** How many different recipes can you make, where order of ingredients doesn't matter?`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## DP Approach
+
+    dp[i] = number of ways to make amount i
+    dp[0] = 1 (one way to make 0: use nothing)
+
+### Process coins one at a time:
+For each coin c, for each amount a from c to target:
+    dp[a] += dp[a - c]
+
+### For coins=[1,2,5], amount=5:
+After coin 1: dp = [1,1,1,1,1,1]
+After coin 2: dp = [1,1,2,2,3,3]
+After coin 5: dp = [1,1,2,2,3,**4**]
+
+Result: **4** ways ✅`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Why outer loop = coins?
+Prevents counting permutations. Each coin is considered only once per "layer".
+
+### Inner loop
+    for (int a = c; a <= amount; a++)
+        dp[a] += dp[a - c];
+**WHY a from c?** Can't use coin c if amount < c.
+
+### vs Coin Change I
+- CC I: dp[a] = **min**(dp[a], dp[a-c] + 1)
+- CC II: dp[a] **+=** dp[a-c]
+
+## Time & Space Complexity
+- **Time:** O(amount × n) where n = number of coins
+- **Space:** O(amount) for DP array`
+    },
+];
+
 const DC = [1, 2, 5], DA = 5;
 export default function CoinChangeII() {
     const { theme } = useTheme();
@@ -56,6 +111,7 @@ export default function CoinChangeII() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Coin Change II" subtitle="Count ways · Unlimited picks · LC #518">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>Coins:</span>
                 <input value={cT} onChange={e => setCT(e.target.value)} style={{ flex: 1, minWidth: "80px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 10px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

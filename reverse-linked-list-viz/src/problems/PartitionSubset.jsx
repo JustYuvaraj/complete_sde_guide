@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `bool canPartition(vector<int>& nums, int i, int rem) {` },
@@ -50,6 +50,57 @@ function gen(nums) {
     return { steps, answer: ans };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Can the array be split into two subsets with **equal sum**? E.g., [1,5,11,5] → true ([1,5,5] and [11]).
+
+## How to Think About It
+1. Calculate total sum. If **odd**, impossible!
+2. Find if any subset sums to **sum/2**. If yes, the other half is automatically sum/2.
+
+Reduced to: **Subset Sum** problem with target = totalSum / 2.
+
+**Think of it like:** Dividing a pile of coins into two equal piles. You just need to find one pile that equals half the total.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for [1,5,11,5]
+
+1. Total = 22, target = 11
+2. Try each element: include or exclude
+3. Include 1: target becomes 10
+4. Include 5: target becomes 5
+5. Include 5: target becomes 0 → **FOUND!** ✅
+
+Subsets: {1,5,5}=11 and {11}=11 ✅
+
+### DP Approach
+Boolean dp[j] = can we make sum j using elements so far?`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Quick Check
+    if (totalSum % 2 != 0) return false;
+Odd total can never be split equally.
+
+### Subset Sum DP
+    dp[0] = true
+    for each num: for j = target down to num:
+        dp[j] = dp[j] || dp[j - num]
+
+### Why iterate backwards?
+Prevents using same element twice (0/1 Knapsack pattern).
+
+## Time & Space Complexity
+- **Time:** O(n × sum/2)
+- **Space:** O(sum/2) for 1D DP array`
+    },
+];
+
 const DA = [1, 5, 11, 5];
 export default function PartitionSubset() {
     const [aT, setAT] = useState(DA.join(","));
@@ -60,6 +111,7 @@ export default function PartitionSubset() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Partition Equal Subset Sum" subtitle="Include/Exclude · Subset sum = half · LC #416">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={aT} onChange={setAT} onRun={run} onReset={reset} placeholder="1,5,11,5" label="Array (1–6 el):" />
             <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "920px", flexWrap: "wrap", alignItems: "flex-start" }}>
                 <CodePanel code={CODE} activeLineId={step.cl} accentColor={pc} fileName="partition_subset.cpp" />

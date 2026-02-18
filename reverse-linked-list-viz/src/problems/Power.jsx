@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -71,6 +71,67 @@ function gen(x, n) {
     return { steps, answer: +finalAns.toFixed(6) };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Compute **x^n** efficiently. Naive approach: multiply x by itself n times = O(n). Can we do better?
+
+## How to Think About It
+**Ask yourself:** "Can I halve the problem at each step?"
+
+### The Key Insight
+- x^10 = (x^5)^2 — just compute x^5 and square it!
+- x^5 = x × (x^4) = x × (x^2)^2
+- Each step cuts n in **half** → O(log n) multiplications!
+
+**Think of it like:** Instead of climbing 100 stairs one at a time, you jump half the staircase each time. 100 → 50 → 25 → 12 → 6 → 3 → 1 (only 7 steps!)`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for 2^10
+
+1. pow(2,10) → n is **even** → compute pow(2,5), then square it
+2. pow(2,5) → n is **odd** → 2 × pow(2,4)
+3. pow(2,4) → n is **even** → compute pow(2,2), then square it
+4. pow(2,2) → n is **even** → compute pow(2,1), then square it
+5. pow(2,1) → n is **odd** → 2 × pow(2,0)
+6. pow(2,0) → **BASE CASE** returns 1
+7. Unwind: 2, 4, 16, 32, 1024 ✅
+
+### Two Cases at Each Level
+- **Even n:** half = pow(x, n/2), return half × half
+- **Odd n:** return x × pow(x, n-1)
+
+This is also called **binary exponentiation** or **exponentiation by squaring**.`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1: Base Case
+    if (n == 0) return 1;
+**WHY:** Anything to the power 0 is 1. Stops recursion.
+
+### Line 2: Negative Exponent
+    if (n < 0) return 1/myPow(x, -n);
+**WHY:** x^(-n) = 1/(x^n). Convert to positive and invert.
+
+### Line 3-5: Even Exponent (Key Optimization)
+    double half = myPow(x, n/2);
+    return half * half;
+**WHY:** x^n = (x^(n/2))^2. We compute x^(n/2) ONCE and square it. This is what makes it O(log n) instead of O(n).
+
+### Line 6: Odd Exponent
+    return x * myPow(x, n-1);
+**WHY:** Pull out one x to make the exponent even, then the even case handles the rest.
+
+## Time & Space Complexity
+- **Time:** O(log n) — exponent halves at each step
+- **Space:** O(log n) — recursion depth is log n`
+    },
+];
+
 const DX = 2, DN = 10;
 export default function Power() {
     const { theme } = useTheme();
@@ -83,6 +144,7 @@ export default function Power() {
 
     return (
         <VizLayout title="Power of x^n" subtitle="O(log n) fast exponentiation · LC #50">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>x:</span>
                 <input value={xT} onChange={e => setXT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ width: "50px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

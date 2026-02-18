@@ -248,7 +248,7 @@ export function VizLayout({ title, subtitle, children }) {
     const { theme } = useTheme();
     return (
         <div style={{
-            height: "100vh", boxSizing: "border-box",
+            minHeight: "100vh", boxSizing: "border-box",
             color: theme.text,
             fontFamily: "'Fira Code','JetBrains Mono',monospace",
             display: "flex", flexDirection: "column", alignItems: "center",
@@ -317,6 +317,150 @@ export function InputSection({ value, onChange, onRun, onReset, placeholder, lab
             }}>
                 ↺ Default
             </button>
+        </div>
+    );
+}
+
+/* ━━━ Explain Panel (expandable "How to Think" section) ━━━ */
+export function ExplainPanel({ sections = [] }) {
+    const { theme, isDark } = useTheme();
+    const [open, setOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(0);
+
+    // sections: [{ icon, title, content (string or JSX), color }]
+    if (!sections.length) return null;
+
+    const accentColors = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ec4899"];
+
+    return (
+        <div style={{
+            width: "100%", maxWidth: "920px",
+            background: isDark ? "#0d1117" : "#f8fafc",
+            border: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
+            borderRadius: "12px", overflow: "hidden",
+            transition: "all 0.3s",
+        }}>
+            {/* Toggle header */}
+            <button onClick={() => setOpen(!open)} style={{
+                width: "100%", display: "flex", alignItems: "center", gap: "10px",
+                padding: "10px 16px", background: "transparent", border: "none",
+                cursor: "pointer", color: isDark ? "#e2e8f0" : "#1e293b",
+                fontFamily: "'Fira Code','JetBrains Mono',monospace",
+                fontSize: "0.78rem", fontWeight: 800, textAlign: "left",
+            }}>
+                <span style={{
+                    fontSize: "1.1rem",
+                    transform: open ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s", display: "inline-block",
+                }}>▶</span>
+                <span>🧠 How to Think & Solve This Problem</span>
+                <span style={{
+                    marginLeft: "auto", fontSize: "0.55rem", fontWeight: 600,
+                    color: isDark ? "#64748b" : "#94a3b8", textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                }}>{open ? "collapse" : "expand"}</span>
+            </button>
+
+            {/* Content */}
+            {open && (
+                <div style={{ borderTop: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}` }}>
+                    {/* Tabs */}
+                    <div style={{
+                        display: "flex", gap: "0", overflowX: "auto",
+                        borderBottom: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
+                    }}>
+                        {sections.map((sec, i) => {
+                            const isActive = i === activeTab;
+                            const col = sec.color || accentColors[i % accentColors.length];
+                            return (
+                                <button key={i} onClick={() => setActiveTab(i)} style={{
+                                    flex: "1 1 0", padding: "8px 12px",
+                                    background: isActive ? (isDark ? "#111827" : "#fff") : "transparent",
+                                    border: "none",
+                                    borderBottom: `2px solid ${isActive ? col : "transparent"}`,
+                                    cursor: "pointer",
+                                    color: isActive ? col : (isDark ? "#64748b" : "#94a3b8"),
+                                    fontFamily: "'Fira Code','JetBrains Mono',monospace",
+                                    fontSize: "0.62rem", fontWeight: isActive ? 800 : 600,
+                                    display: "flex", alignItems: "center", gap: "6px",
+                                    justifyContent: "center", whiteSpace: "nowrap",
+                                    transition: "all 0.2s",
+                                }}>
+                                    <span style={{ fontSize: "0.85rem" }}>{sec.icon}</span>
+                                    {sec.title}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Active Tab Content */}
+                    <div style={{
+                        padding: "16px 20px",
+                        fontSize: "0.72rem", lineHeight: "1.8",
+                        color: isDark ? "#cbd5e1" : "#334155",
+                        maxHeight: "400px", overflowY: "auto",
+                    }}>
+                        {typeof sections[activeTab].content === "string"
+                            ? sections[activeTab].content.split("\n").map((line, i) => {
+                                if (!line.trim()) return <div key={i} style={{ height: "8px" }} />;
+                                // Handle headers (lines starting with ##)
+                                if (line.startsWith("### ")) return (
+                                    <div key={i} style={{ fontSize: "0.7rem", fontWeight: 800, color: sections[activeTab].color || accentColors[activeTab % accentColors.length], marginTop: "10px", marginBottom: "4px" }}>
+                                        {line.replace("### ", "")}
+                                    </div>
+                                );
+                                if (line.startsWith("## ")) return (
+                                    <div key={i} style={{ fontSize: "0.75rem", fontWeight: 800, color: isDark ? "#e2e8f0" : "#1e293b", marginTop: "12px", marginBottom: "4px" }}>
+                                        {line.replace("## ", "")}
+                                    </div>
+                                );
+                                // Handle bullet points
+                                if (line.trim().startsWith("• ") || line.trim().startsWith("- ")) return (
+                                    <div key={i} style={{ paddingLeft: "14px", position: "relative", marginBottom: "2px" }}>
+                                        <span style={{ position: "absolute", left: "2px", color: sections[activeTab].color || accentColors[activeTab % accentColors.length] }}>•</span>
+                                        {line.trim().replace(/^[•\-]\s*/, "")}
+                                    </div>
+                                );
+                                // Handle numbered lists
+                                if (/^\d+[\.\)]/.test(line.trim())) return (
+                                    <div key={i} style={{ paddingLeft: "14px", marginBottom: "2px" }}>
+                                        <span style={{ fontWeight: 700, color: sections[activeTab].color || accentColors[activeTab % accentColors.length] }}>
+                                            {line.trim().match(/^\d+[\.\)]/)[0]}
+                                        </span>
+                                        {line.trim().replace(/^\d+[\.\)]\s*/, " ")}
+                                    </div>
+                                );
+                                // Handle code-like lines (starts with spaces/tabs or backticks)
+                                if (line.startsWith("    ") || line.startsWith("\t") || line.startsWith("```")) {
+                                    if (line.startsWith("```")) return null;
+                                    return (
+                                        <div key={i} style={{
+                                            fontFamily: "'Fira Code', monospace", fontSize: "0.65rem",
+                                            background: isDark ? "#1e293b" : "#f1f5f9",
+                                            padding: "2px 10px", borderRadius: "4px",
+                                            color: isDark ? "#93c5fd" : "#1e40af",
+                                            marginBottom: "1px", borderLeft: `2px solid ${sections[activeTab].color || "#6366f1"}`,
+                                        }}>{line}</div>
+                                    );
+                                }
+                                // Handle bold text with **
+                                const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                                return (
+                                    <div key={i} style={{ marginBottom: "2px" }}>
+                                        {parts.map((part, j) => {
+                                            if (part.startsWith("**") && part.endsWith("**")) {
+                                                return <strong key={j} style={{ color: isDark ? "#e2e8f0" : "#1e293b", fontWeight: 800 }}>{part.slice(2, -2)}</strong>;
+                                            }
+                                            return <span key={j}>{part}</span>;
+                                        })}
+                                    </div>
+                                );
+                            })
+                            : sections[activeTab].content
+                        }
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

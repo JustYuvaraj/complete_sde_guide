@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
-    MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection,
+    MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -129,6 +129,56 @@ function generateSteps(list1, list2) {
 const DEFAULT_L1 = [1, 3, 5];
 const DEFAULT_L2 = [2, 4, 6];
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Merge two **sorted** linked lists into one sorted list. This is the fundamental building block of merge sort.
+
+## Key Insight
+Compare heads of both lists. The smaller head becomes the next node. Recurse on the remaining.
+
+## Mental Model
+1. Compare l1->val and l2->val
+2. Take the smaller one as current node
+3. Its next = merge(remaining of both lists)
+4. Base case: if either list is null, return the other`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+1. merge(1,2): 1 ≤ 2 → take 1, next = merge(3,2)
+2. merge(3,2): 3 > 2 → take 2, next = merge(3,4)
+3. merge(3,4): 3 ≤ 4 → take 3, next = merge(5,4)
+4. Continue until one list is null
+5. Unwind: build the merged list as recursion returns
+
+## Why Recursion?
+Each recursive call handles one comparison and one node. The call stack naturally builds the result during unwinding.`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+merge(l1, l2):
+  if !l1: return l2
+  if !l2: return l1
+  if l1->val <= l2->val:
+    l1->next = merge(l1->next, l2)
+    return l1
+  else:
+    l2->next = merge(l1, l2->next)
+    return l2
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time | **O(m + n)** — visit each node once |
+| Space | **O(m + n)** — recursion stack |`
+    }
+];
+
 export default function MergeSortedLists() {
     const { theme, isDark } = useTheme();
     const [inputL1, setInputL1] = useState(DEFAULT_L1.join(","));
@@ -161,6 +211,7 @@ export default function MergeSortedLists() {
             title="Merge Two Sorted Lists — Code ↔ Visual Sync"
             subtitle={`L1: ${L1.join("→")} · L2: ${L2.join("→")} · Recursive approach`}
         >
+            <ExplainPanel sections={EXPLAIN} />
             {/* Two separate inputs for L1 and L2 */}
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.62rem", color: theme.textMuted, whiteSpace: "nowrap" }}>L1:</span>

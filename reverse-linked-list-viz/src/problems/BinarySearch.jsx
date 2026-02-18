@@ -3,6 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection,
+    ExplainPanel,
 } from "../shared/Components";
 
 const DEFAULT_ARR = [10, 20, 30, 40, 50, 60, 70, 80, 90];
@@ -199,6 +200,69 @@ function buildTree(steps) {
     return { nodes, edges };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find a target value in a **sorted** array. Return its index, or -1 if not found.
+
+## How to Think About It
+**Ask yourself:** "Is the target in the left or right half of the current range?"
+
+### Divide & Conquer
+- Look at the **middle** element
+- If it's the target → done!
+- If target is **smaller** → search LEFT half
+- If target is **larger** → search RIGHT half
+- Each step eliminates **half** the remaining elements
+
+**Think of it like:** Opening a dictionary to the middle. Is your word before or after this page? Flip to the correct half and repeat.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for [10,20,30,40,50,60,70,80,90], target=40
+
+1. l=0, r=8: mid=4, arr[4]=50 > 40 → go LEFT
+2. l=0, r=3: mid=1, arr[1]=20 < 40 → go RIGHT
+3. l=2, r=3: mid=2, arr[2]=30 < 40 → go RIGHT
+4. l=3, r=3: mid=3, arr[3]=40 = 40 → **FOUND** at index 3! ✅
+
+Only 4 comparisons for 9 elements!
+
+### Why O(log n)?
+Each step halves the search space:
+- 16 elements → 4 steps max
+- 1000 elements → 10 steps max
+- 1,000,000 elements → 20 steps max!`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1: Base Case
+    if (l > r) return -1;
+**WHY:** If left pointer passes right, the search space is empty → element not found.
+
+### Line 3: Compute Mid
+    int mid = l + (r - l) / 2;
+**WHY l+(r-l)/2 instead of (l+r)/2?** Prevents integer overflow for large arrays.
+
+### Line 5-6: Found!
+    if (arr[mid] == t) return mid;
+
+### Line 8-9: Target is RIGHT
+    if (arr[mid] < t) return binarySearch(arr, mid+1, r, t);
+**WHY mid+1?** We already checked mid, so exclude it.
+
+### Line 12: Target is LEFT
+    return binarySearch(arr, l, mid-1, t);
+
+## Time & Space Complexity
+- **Time:** O(log n) — halve search space each step
+- **Space:** O(log n) recursive, O(1) iterative`
+    },
+];
+
 export default function BinarySearch() {
     const { theme, isDark } = useTheme();
     const [inputText, setInputText] = useState(`[${DEFAULT_ARR.join(",")}], ${DEFAULT_TARGET}`);
@@ -250,6 +314,7 @@ export default function BinarySearch() {
             title="Binary Search — Recursive"
             subtitle={`arr = [${arr.join(",")}] · target = ${target} · O(log n)`}
         >
+            <ExplainPanel sections={EXPLAIN} />
             {/* Input section */}
             <InputSection
                 value={inputText}

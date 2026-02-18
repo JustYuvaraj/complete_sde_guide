@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `void permute(vector<int>& nums, int start,` },
@@ -51,6 +51,109 @@ function gen(nums) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Given an array of **distinct** numbers, return **all possible orderings** (permutations).
+For [1,2,3] → 6 permutations: [1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]
+
+## How to Think About It
+**Ask yourself:** "At each position, what choices do I have?"
+
+### Position-by-Position Thinking
+- Position 0: I can place **any** of the n numbers → n choices
+- Position 1: I can place **any remaining** number → n-1 choices
+- Position 2: I can place **any remaining** → n-2 choices
+- ...and so on
+
+This gives n × (n-1) × (n-2) × ... × 1 = **n!** total permutations.
+
+### Why Swap-Based?
+Instead of using a "used" boolean array (which wastes space), we **swap**:
+- Swap the next candidate into the current position
+- Recurse to fill the rest
+- Swap back (backtrack) to try the next candidate
+
+**Think of it like:** You have cards in a row. For each position, you try placing each remaining card there, fill the rest recursively, then put the card back.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step Algorithm
+
+### Input: [1, 2, 3], start = 0
+
+1. **start=0:** Try each element at position 0
+- swap(0,0) → [**1**,2,3] → recurse with start=1
+- swap(0,1) → [**2**,1,3] → recurse with start=1
+- swap(0,2) → [**3**,2,1] → recurse with start=1
+
+2. **start=1** (after 1 is fixed at position 0): Try remaining
+- swap(1,1) → [1,**2**,3] → recurse with start=2
+- swap(1,2) → [1,**3**,2] → recurse with start=2
+
+3. **start=2** (which equals array length):
+- **BASE CASE** → save [1,2,3] as a permutation! ✅
+
+4. **Backtrack:** unswap, try next candidate
+
+### The Backtracking Template
+    function solve(start):
+        if start == n: SAVE result
+        for i = start to n-1:
+            SWAP nums[start] with nums[i]   ← TRY
+            solve(start + 1)                 ← RECURSE
+            SWAP back                        ← UNDO
+
+### Why It Works
+- At each level, we "fix" one position
+- The loop tries every remaining element at that position
+- After recursing, we undo the swap to restore the original order
+- This ensures every possible ordering is explored exactly once`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1-2: Function Signature
+    void permute(nums, start, res)
+- **nums**: the array (modified in-place via swaps)
+- **start**: which position we're currently filling
+- **res**: collects all found permutations
+
+### Line 3-4: Base Case
+    if (start == nums.size())
+        res.push_back(nums); return;
+**WHY:** When start reaches the end, ALL positions are filled → we have a complete permutation. Save it!
+
+### Line 5: The Choice Loop
+    for (int i = start; i < nums.size(); i++)
+**WHY start, not 0?** Elements before position "start" are already fixed. We only consider elements from "start" onwards (the unfixed portion).
+
+### Line 6: Make the Choice (Swap)
+    swap(nums[start], nums[i]);
+**WHY swap?** This efficiently places nums[i] at position "start" without needing extra arrays. It's like saying "try element i at the current position."
+
+### Line 7: Recurse
+    permute(nums, start+1, res);
+**WHY start+1?** Position "start" is now filled. Move to the next position.
+
+### Line 8: Undo the Choice (Backtrack)
+    swap(nums[start], nums[i]);
+**WHY swap back?** We must restore the array to its original state before trying the next candidate. This is the **heart of backtracking** — undo your choice so other branches don't see a corrupted state.
+
+## Common Mistakes
+- Forgetting to swap back → array becomes corrupted
+- Starting loop from 0 instead of start → duplicates
+- Not making a copy when saving result → all entries become the same
+
+## Time & Space Complexity
+- **Time:** O(n × n!) — n! permutations, each takes O(n) to copy
+- **Space:** O(n) recursion depth + O(n × n!) for storing results
+- **Why n!?** Each level has one fewer choice: n × (n-1) × ... × 1`
+    },
+];
+
 const DA = [1, 2, 3];
 export default function Permutations() {
     const [aT, setAT] = useState(DA.join(","));
@@ -61,6 +164,7 @@ export default function Permutations() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Permutations" subtitle="Swap-based backtracking · n! paths · LC #46">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={aT} onChange={setAT} onRun={run} onReset={reset} placeholder="1,2,3" label="Array (2–4 el):" />
             <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "920px", flexWrap: "wrap", alignItems: "flex-start" }}>
                 <CodePanel code={CODE} activeLineId={step.cl} accentColor={pc} fileName="permutations.cpp" />

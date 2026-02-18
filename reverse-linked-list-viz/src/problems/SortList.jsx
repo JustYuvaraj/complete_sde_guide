@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel, MessageBar,
-    ControlBar, VizLayout, usePlayer, VizCard, StepInfo
+    ControlBar, VizLayout, usePlayer, VizCard, StepInfo, ExplainPanel
 } from "../shared/Components";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -417,6 +417,56 @@ function RecursionTreeViz({ treeLayout, activeVals, doneVals }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Sort a linked list in **O(n log n)** time. Arrays use quicksort/mergesort, but for linked lists, **merge sort** is ideal.
+
+## Key Insight
+Merge sort on linked lists: find the middle (slow/fast pointers), split, recursively sort both halves, then merge.
+
+## Mental Model
+1. Find middle using slow/fast pointers
+2. Split list at middle
+3. Recursively sort left and right halves
+4. Merge two sorted halves
+5. Base case: 0 or 1 nodes`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+1. [4,2,1,3] → find mid → split into [4,2] and [1,3]
+2. [4,2] → split into [4] and [2] → merge to [2,4]
+3. [1,3] → split into [1] and [3] → merge to [1,3]
+4. Merge [2,4] and [1,3] → [1,2,3,4]
+
+## Why Merge Sort for Linked Lists?
+- No random access needed (unlike quicksort)
+- Finding middle with slow/fast is O(n)
+- Merge is natural for linked lists (pointer manipulation)`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+sortList(head):
+  if !head or !head->next: return head
+  slow/fast to find mid
+  split at mid
+  left  = sortList(first half)
+  right = sortList(second half)
+  return merge(left, right)
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time | **O(n log n)** |
+| Space | **O(log n)** — recursion stack |`
+    }
+];
+
 export default function SortList() {
     const { theme } = useTheme();
     const [inputText, setInputText] = useState(DEFAULT_LIST.join(","));
@@ -459,6 +509,7 @@ export default function SortList() {
 
     return (
         <VizLayout title="Sort List — Merge Sort on Linked List" subtitle="LC #148 · O(n log n) · Slow/Fast split → Recursive merge">
+            <ExplainPanel sections={EXPLAIN} />
             {/* Custom input */}
             <div style={{
                 display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap",

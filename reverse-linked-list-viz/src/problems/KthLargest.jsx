@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel, MessageBar,
-    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo
+    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo, ExplainPanel
 } from "../shared/Components";
 
 // ── Code lines ────────────────────────────────────────────────────────
@@ -485,6 +485,56 @@ function RankTracker({ step, k, answer }) {
 }
 
 // ── App ───────────────────────────────────────────────────────────────
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find the **kth largest** element in an unsorted array. We want average O(n) time, not O(n log n) sorting.
+
+## Key Insight
+**QuickSelect** is like QuickSort, but only recurses into ONE side. After partitioning, the pivot is at its final position. Its **rank** (position from the right) tells us which side to recurse.
+
+## Mental Model
+1. Pick a pivot, partition: elements ≥ pivot go left, < pivot go right
+2. Compute rank = (r - pivotPos + 1)
+3. If rank == k → found!
+4. If rank > k → answer is in the RIGHT half
+5. If rank < k → answer is in the LEFT half with k -= rank`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+1. **Partition** around pivot (last element)
+2. All elements ≥ pivot move to the left zone
+3. Pivot lands at its final sorted position
+4. **Check rank**: is this the kth largest?
+5. If not, recurse into only ONE side
+
+## Why Only One Side?
+After partition, we know exactly how many elements are ≥ pivot. If that count equals k, we’re done. Otherwise, we eliminate half the array each time — average O(n) total work.`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+quickSelect(a, l, r, k):
+  if l == r: return a[l]
+  p = partition(a, l, r)
+  rank = r - p + 1
+  if rank == k: return a[p]
+  if rank > k:  return qs(a, p+1, r, k)
+  else:         return qs(a, l, p-1, k-rank)
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time (avg) | **O(n)** — halves search space each time |
+| Time (worst) | **O(n²)** — bad pivot choices |
+| Space | **O(log n)** — recursion depth |`
+    }
+];
+
 const DEFAULT_ARR = [3, 2, 1, 5, 6, 4];
 const DEFAULT_K = 2;
 
@@ -539,6 +589,7 @@ export default function KthLargest() {
 
     return (
         <VizLayout title="Kth Largest Element" subtitle="QuickSelect · Average O(n) · LC #215">
+            <ExplainPanel sections={EXPLAIN} />
             {/* Custom input with k field */}
             <div style={{
                 display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap",

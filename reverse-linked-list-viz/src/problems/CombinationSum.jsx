@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -67,6 +67,63 @@ function gen(cands, target) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find all **unique combinations** of candidates that sum to target. Each candidate can be used **unlimited times**. E.g., [2,3,6,7], target=7 → [[2,2,3],[7]]
+
+## How to Think About It
+**Ask yourself:** "At each step, which candidates can I try adding?"
+
+### Why Unlimited Reuse?
+- When we pick candidate c[i], we recurse with start=**i** (not i+1)
+- This means we can pick the same candidate again
+- Target decreases by c[i] each time
+
+**Think of it like:** Making change for 7 cents using coins [2,3,6,7]. You can use as many of each coin as needed.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for candidates=[2,3,6,7], target=7
+
+1. Pick 2 (t=5) → Pick 2 (t=3) → Pick 2 (t=1) → Pick 2 (t=-1) → **PRUNE** (t<0)
+2. Back, pick 3 (t=-2) → **PRUNE**
+3. Back to t=3, pick 3 (t=0) → **FOUND** [2,2,3] ✅
+4. Back to t=5, pick 3 (t=2) → pick 3 (t=-1) → **PRUNE**
+5. ...eventually pick 7 (t=0) → **FOUND** [7] ✅
+
+### Pruning is Critical
+- If target < 0 → overshot, stop
+- If candidate > remaining target → skip (sort helps here)
+- Sorting candidates lets us break early`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 2: Found!
+    if (t == 0) { res.push_back(cur); return; }
+**WHY:** Target exactly 0 means current combination sums to target. Save it!
+
+### Line 3: Prune
+    if (t < 0) return;
+**WHY:** Overshot the target. No point exploring further.
+
+### Line 4: Loop from start (not 0)
+    for (int i = start; ...)
+**WHY start?** To avoid duplicate combinations like [2,3] and [3,2]. Only go forward.
+
+### Line 6: Recurse with i (not i+1)
+    combSum(c, t-c[i], i, cur, res);
+**WHY i and not i+1?** This allows reusing the same candidate. If you use i+1, each element can only be used once.
+
+## Time & Space Complexity
+- **Time:** O(n^(t/min)) where min is smallest candidate
+- **Space:** O(t/min) recursion depth`
+    },
+];
+
 const DC = [2, 3, 6, 7], DT = 7;
 export default function CombinationSum() {
     const { theme } = useTheme();
@@ -78,6 +135,7 @@ export default function CombinationSum() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Combination Sum" subtitle="Unlimited reuse · Include/Skip · LC #39">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>Cands:</span>
                 <input value={cT} onChange={e => setCT(e.target.value)} onKeyDown={e => e.key === "Enter" && run()} style={{ flex: 1, minWidth: "100px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 10px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

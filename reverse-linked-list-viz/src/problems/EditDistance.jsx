@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
-import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel } from "../shared/Components";
+import { CodePanel, VariablesPanel, CallStackPanel, MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, RecursionTreePanel, ExplainPanel } from "../shared/Components";
 
 const CODE = [
     { id: 0, text: `int editDist(string& a, string& b, int i, int j) {` },
@@ -68,6 +68,63 @@ function PtrViz({ step }) {
     );
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find minimum operations (insert, delete, replace) to convert word1 to word2. E.g., "horse" → "ros" = 3 edits.
+
+## How to Think About It
+Compare characters from the end:
+- If chars **match**: no cost, move both pointers
+- If chars **differ**: try all 3 operations, take minimum:
+  1. **Insert:** add char, advance j
+  2. **Delete:** remove char, advance i
+  3. **Replace:** change char, advance both
+
+**Think of it like:** Spell-checking — what's the cheapest way to fix misspelled words?`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## DP Table for "horse" → "ros"
+
+|   | "" | r | o | s |
+|---|---|---|---|---|
+| "" | 0 | 1 | 2 | 3 |
+| h | 1 | 1 | 2 | 3 |
+| o | 2 | 2 | 1 | 2 |
+| r | 3 | 2 | 2 | 2 |
+| s | 4 | 3 | 3 | 2 |
+| e | 5 | 4 | 4 | **3** |
+
+Answer: **3** operations ✅
+(horse → rorse → rose → ros)`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Match
+    if (w1[i] == w2[j]) dp[i][j] = dp[i-1][j-1]
+**WHY:** No operation needed!
+
+### Mismatch
+    dp[i][j] = 1 + min(
+        dp[i-1][j],    // delete from w1
+        dp[i][j-1],    // insert into w1
+        dp[i-1][j-1]   // replace in w1
+    )
+
+### Base Cases
+- dp[i][0] = i (delete all chars from w1)
+- dp[0][j] = j (insert all chars of w2)
+
+## Time & Space Complexity
+- **Time:** O(m × n)
+- **Space:** O(m × n), or O(n) with rolling array`
+    },
+];
+
 const DA = "horse", DB = "ros";
 export default function EditDistance() {
     const { theme } = useTheme();
@@ -79,6 +136,7 @@ export default function EditDistance() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Edit Distance" subtitle="Insert / Delete / Replace · LC #72">
+            <ExplainPanel sections={EXPLAIN} />
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "920px" }}>
                 <span style={{ fontSize: "0.6rem", color: theme.textMuted }}>A:</span>
                 <input value={aT} onChange={e => setAT(e.target.value)} style={{ width: "80px", background: theme.cardBg, color: theme.text, border: `1px solid ${theme.cardBorder}`, borderRadius: "6px", padding: "5px 8px", fontSize: "0.7rem", fontFamily: "inherit", outline: "none" }} />

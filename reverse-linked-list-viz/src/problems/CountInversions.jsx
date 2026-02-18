@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel, MessageBar,
-    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo
+    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo, ExplainPanel
 } from "../shared/Components";
 
 const CODE = [
@@ -411,6 +411,64 @@ function InversionTracker({ step, pc }) {
 }
 
 // ── App ──────────────────────────────────────────────────────────────
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Given an array, count the number of **inversions** — pairs (i, j) where i < j but arr[i] > arr[j].
+
+## Key Insight
+A brute-force O(n²) check compares every pair. But during **merge sort**, whenever a right-half element is smaller than a left-half element, ALL remaining left elements form inversions with it.
+
+## Mental Model
+1. **Divide** the array in half recursively
+2. **Count** inversions within each half (recursive calls)
+3. **Count split inversions** during the merge step
+4. When right[j] < left[i]: inv += (mid − i + 1) — all remaining left elements are greater
+
+## Why Merge Sort?
+Merge sort naturally compares elements from sorted halves. The "split inversions" are exactly the cross-half pairs that are out of order. This gives us O(n log n) instead of O(n²).`
+    },
+    {
+        icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+        content: `## Execution Trace
+1. **Recursively split** the array until base cases (single elements)
+2. **Merge pairs** back up, counting inversions during each merge
+3. When merging [1,4] with [2,3]: 4 > 2 → +1 inv, 4 > 3 → +1 inv
+
+## During Merge
+| Comparison | Result | Inversions Added |
+|---|---|---|
+| left[i] ≤ right[j] | Take left, no inversion | 0 |
+| left[i] > right[j] | Take right, all remaining left elements are inversions | mid - i + 1 |
+
+## Key Observation
+The total inversions = left inversions + right inversions + split inversions (counted during merge).`
+    },
+    {
+        icon: "💡", title: "Code & Complexity", color: "#10b981",
+        content: `## Algorithm
+\`\`\`
+countInv(arr, l, r):
+  if l >= r: return 0
+  mid = (l+r)/2
+  left  = countInv(arr, l, mid)
+  right = countInv(arr, mid+1, r)
+  split = mergeCount(arr, l, mid, r)
+  return left + right + split
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time | **O(n log n)** — merge sort |
+| Space | **O(n)** — temp array for merging |
+
+## Key Detail
+The merge step is standard merge sort, but we add \`inv += (mid - i + 1)\` every time right[j] < left[i]. This counts ALL remaining left elements as inversions with right[j].`
+    }
+];
+
 const DEFAULT = [2, 4, 1, 3, 5];
 
 export default function CountInversions() {
@@ -457,6 +515,7 @@ export default function CountInversions() {
 
     return (
         <VizLayout title="Count Inversions" subtitle="Merge Sort · O(n log n)">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={inputText} onChange={setInputText} onRun={handleRun} onReset={handleReset}
                 placeholder="e.g. 5,3,1,4,2" label="Array:" />
 

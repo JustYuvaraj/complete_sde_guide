@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel, MessageBar,
-    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo
+    ControlBar, VizLayout, InputSection, usePlayer, VizCard, StepInfo,
+    ExplainPanel,
 } from "../shared/Components";
 
 // ── Code ─────────────────────────────────────────────────────────────
@@ -466,6 +467,61 @@ function CandidatesPanel({ step, total }) {
 }
 
 // ── App ───────────────────────────────────────────────────────────────
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Find the contiguous subarray with the **largest sum**. E.g., [-2,1,-3,4,-1,2,1,-5] → 6 (subarray [4,-1,2,1]).
+
+## Divide & Conquer Approach
+Split array in half. Max subarray is in:
+1. **Left half** only
+2. **Right half** only
+3. **Crosses the middle** (extends both sides)
+
+Answer = max of all three.
+
+**Think of it like:** Splitting a rope in half. The strongest section is either entirely left, entirely right, or spans the middle.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step
+
+1. Split array at mid
+2. Recursively solve left half and right half
+3. Find max crossing sum:
+   - Extend left from mid: best sum going left
+   - Extend right from mid+1: best sum going right
+   - Cross sum = left + right
+4. Return max(leftMax, rightMax, crossMax)
+
+### Also: Kadane's Algorithm (O(n))
+    maxHere = max(num, maxHere + num)
+    maxSoFar = max(maxSoFar, maxHere)
+Simpler but this viz shows divide & conquer.`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Key Points
+
+### Cross Sum Calculation
+From mid, extend left summing elements. Track max.
+From mid+1, extend right summing elements. Track max.
+Cross = leftMax + rightMax.
+
+### Base Case
+    if (l == r) return arr[l];
+Single element is its own max subarray.
+
+### Why D&C when Kadane's is simpler?
+D&C teaches the paradigm. Same idea applies to merge sort, closest pair, etc.
+
+## Time & Space Complexity
+- **Time:** O(n log n) for D&C, O(n) for Kadane's
+- **Space:** O(log n) recursion depth`
+    },
+];
+
 const DEFAULT = [-2, 1, -3, 4, -1, 2, 1, -5];
 
 export default function MaxSubarray() {
@@ -525,6 +581,7 @@ export default function MaxSubarray() {
 
     return (
         <VizLayout title="Maximum Subarray" subtitle="Divide & Conquer · O(n log n)">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={inputText} onChange={setInputText} onRun={handleRun} onReset={handleReset}
                 placeholder="-2,1,-3,4,-1,2" label="Array:" />
 

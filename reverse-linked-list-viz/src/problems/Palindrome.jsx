@@ -3,6 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, StepInfo, VizLayout, VizCard, usePlayer, InputSection,
+    ExplainPanel,
 } from "../shared/Components";
 
 const DEFAULT_WORD = "RACECAR";
@@ -133,6 +134,63 @@ function generateSteps(word) {
     return steps;
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Check if a string reads the **same forwards and backwards**. E.g., "RACECAR" → Yes, "HELLO" → No.
+
+## How to Think About It
+**Ask yourself:** "Do the first and last characters match? If yes, is the middle part also a palindrome?"
+
+### Two-Pointer Approach
+- Compare **leftmost** (l) and **rightmost** (r) characters
+- If they match, move both pointers **inward** (l+1, r-1)
+- If they don't match, it's NOT a palindrome
+- Stop when l >= r (pointers cross = done)
+
+**Think of it like:** Peeling layers off an onion. Check the outer layer, then the next, until you reach the center.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for "RACECAR"
+
+1. l=0, r=6: R vs R → **MATCH** ✓, move inward
+2. l=1, r=5: A vs A → **MATCH** ✓, move inward
+3. l=2, r=4: C vs C → **MATCH** ✓, move inward
+4. l=3, r=3: E vs E → l==r, same char → **BASE CASE** ✓
+5. Return true! RACECAR is a palindrome ✅
+
+### For "HELLO"
+1. l=0, r=4: H vs O → **MISMATCH** ✗
+2. Return false immediately! Not a palindrome ❌
+
+### Base Cases
+- **l == r:** Middle character (always matches itself)
+- **l > r:** Pointers crossed (all pairs matched)`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 1: Base Case (pointers meet/cross)
+    if (l >= r) return true;
+**WHY:** If left pointer reaches or passes right pointer, we've checked all pairs successfully → it's a palindrome.
+
+### Line 4-5: Mismatch Check
+    if (s[l] != s[r]) return false;
+**WHY:** If outer characters don't match, no need to check further. Short-circuit and return false.
+
+### Line 7: Recurse Inward
+    return isPalin(s, l+1, r-1);
+**WHY:** Outer characters match, so check the next inner pair. l moves right, r moves left.
+
+## Time & Space Complexity
+- **Time:** O(n/2) = O(n) — at most n/2 comparisons
+- **Space:** O(n/2) = O(n) — recursion depth (can be O(1) with iteration)`
+    },
+];
+
 export default function Palindrome() {
     const { theme, isDark } = useTheme();
     const [inputText, setInputText] = useState(DEFAULT_WORD);
@@ -173,6 +231,7 @@ export default function Palindrome() {
             title="Check Palindrome — Code ↔ Visual Sync"
             subtitle="Two-pointer recursion · compare outermost chars · move inward"
         >
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection
                 value={inputText}
                 onChange={setInputText}

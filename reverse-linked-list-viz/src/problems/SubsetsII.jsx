@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import {
     CodePanel, VariablesPanel, CallStackPanel,
     MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection,
-    RecursionTreePanel,
+    RecursionTreePanel, ExplainPanel,
 } from "../shared/Components";
 
 const CODE = [
@@ -56,6 +56,64 @@ function gen(nums) {
     return { steps, result };
 }
 
+const EXPLAIN = [
+    {
+        icon: "🤔", title: "How to Think", color: "#8b5cf6",
+        content: `## The Problem
+Like Subsets (LC #78) but the array **may contain duplicates**. Return all unique subsets. E.g., [1,2,2] → 6 unique subsets.
+
+## How to Think About It
+**Ask yourself:** "How do I avoid generating duplicate subsets?"
+
+### Sort + Skip Strategy
+1. **Sort** the array first → duplicates become adjacent
+2. At each level, if nums[i] == nums[i-1] **at the same level**, skip it
+3. The skip condition: i > start && nums[i] == nums[i-1]
+
+**Think of it like:** In a sorted array [1,2,2], once you've tried starting a branch with the first 2, starting another branch with the second 2 at the same level would produce identical subsets.`
+    },
+    {
+        icon: "📝", title: "Algorithm", color: "#3b82f6",
+        content: `## Step-by-Step for [1, 2, 2]
+
+1. Sort: already [1,2,2]
+2. Start: save {} (empty subset)
+3. Pick 1 → save {1}, pick 2 → save {1,2}, pick 2 → save {1,2,2}
+4. Backtrack, no more → back to {1,2}
+5. Backtrack to {1}, skip second 2 (duplicate!) → done with 1
+6. Pick first 2 → save {2}, pick second 2 → save {2,2}
+7. Skip second 2 at same level as first 2
+
+Result: {}, {1}, {1,2}, {1,2,2}, {2}, {2,2} ✅ (6 unique subsets)
+
+### Key Rule
+At the same recursion level (same "start"), never use the same value twice.`
+    },
+    {
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
+
+### Line 2: Add Current Subset
+    res.push_back(cur);
+**WHY:** Every call represents a valid subset. Add it immediately (unlike Subsets I which adds at leaf).
+
+### Line 3: Loop from start
+    for (int i = start; i < nums.size(); i++)
+**WHY start?** Only consider elements after the ones we've already decided on.
+
+### Line 4: Skip Duplicates (THE KEY LINE)
+    if (i > start && nums[i] == nums[i-1]) continue;
+**WHY i > start?** At the same level, if this value was already used, skip it. But the FIRST occurrence (i == start) is always allowed.
+
+### Lines 5-7: Pick + Recurse + Backtrack
+Standard backtracking: add element, go deeper, remove element.
+
+## Time & Space Complexity
+- **Time:** O(n × 2^n) — at most 2^n unique subsets
+- **Space:** O(n) recursion depth + O(n × 2^n) results`
+    },
+];
+
 const DA = [1, 2, 2];
 export default function SubsetsII() {
     const [aT, setAT] = useState(DA.join(","));
@@ -66,6 +124,7 @@ export default function SubsetsII() {
     const step = sess.steps[Math.min(idx, sess.steps.length - 1)], pc = PC[step.phase] || "#8b5cf6";
     return (
         <VizLayout title="Subsets II" subtitle="Sorted + skip duplicates · LC #90">
+            <ExplainPanel sections={EXPLAIN} />
             <InputSection value={aT} onChange={setAT} onRun={run} onReset={reset} placeholder="1,2,2" label="Array (1–4 el):" />
             <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "920px", flexWrap: "wrap", alignItems: "flex-start" }}>
                 <CodePanel code={CODE} activeLineId={step.cl} accentColor={pc} fileName="subsets_ii.cpp" />

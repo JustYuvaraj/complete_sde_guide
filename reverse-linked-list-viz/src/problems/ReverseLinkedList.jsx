@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import {
   CodePanel, VariablesPanel, CallStackPanel,
-  MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection,
+  MessageBar, ControlBar, VizCard, StepInfo, VizLayout, usePlayer, InputSection, ExplainPanel,
 } from "../shared/Components";
 
 const DEFAULT_LIST = [1, 2, 3, 4, 5];
@@ -135,6 +135,54 @@ function getNodeColor(i, step, isDark) {
   return isDark ? "#1e293b" : "#cbd5e1";
 }
 
+const EXPLAIN = [
+  {
+    icon: "🤔", title: "How to Think", color: "#8b5cf6",
+    content: `## The Problem
+Reverse a singly linked list. 1→2→3→4→5 becomes 5→4→3→2→1.
+
+## Key Insight (Recursive)
+Recurse to the **last node** (new head). On the way back (unwinding), reverse each pointer: node->next->next = node, then cut the old forward pointer.
+
+## Mental Model
+1. **Descend** to the tail (base case: node->next == null)
+2. The tail is the new HEAD
+3. **Ascend** back, at each level: flip the pointer and cut the old one
+4. Pass newHead all the way up`
+  },
+  {
+    icon: "🔍", title: "Step Walkthrough", color: "#f59e0b",
+    content: `## Execution Trace (for [1,2,3,4,5])
+1. reverse(1) → reverse(2) → reverse(3) → reverse(4) → reverse(5)
+2. 5 has no next → BASE CASE, newHead = 5
+3. Back at 4: 4->next->next = 4 → 5→4, then 4->next = null
+4. Back at 3: 3->next->next = 3 → 4→3, then 3->next = null
+5. Continue unwinding until fully reversed
+
+## The Two Key Lines
+- \`node->next->next = node\` → reverses the arrow
+- \`node->next = null\` → cuts the old forward link`
+  },
+  {
+    icon: "💡", title: "Code & Complexity", color: "#10b981",
+    content: `## Algorithm
+\`\`\`
+reverse(node):
+  if node->next == null: return node  // new head
+  newHead = reverse(node->next)
+  node->next->next = node  // reverse link
+  node->next = null         // cut old link
+  return newHead
+\`\`\`
+
+## Complexity
+| Metric | Value |
+|---|---|
+| Time | **O(n)** — visit each node once |
+| Space | **O(n)** — recursion stack |`
+  }
+];
+
 export default function ReverseLinkedList() {
   const { theme, isDark } = useTheme();
   const [inputText, setInputText] = useState(DEFAULT_LIST.join(","));
@@ -166,6 +214,7 @@ export default function ReverseLinkedList() {
       title="Reverse Linked List — Code ↔ Visual Sync"
       subtitle="Watch the exact line of code execute while the list transforms"
     >
+      <ExplainPanel sections={EXPLAIN} />
       <InputSection
         value={inputText}
         onChange={setInputText}
