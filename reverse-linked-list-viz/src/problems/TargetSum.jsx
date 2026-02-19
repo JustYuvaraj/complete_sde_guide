@@ -43,10 +43,8 @@ function gen(nums, target) {
         push(4, "plus", { i, "nums[i]": nums[i], "new t": t - nums[i] }, `+${nums[i]} → t=${t - nums[i]}`);
         const a = solve(t - nums[i], i + 1, myId);
         signs[i] = "-";
-        cs.push(`ts(t=${t},i=${i})`);
         push(6, "minus", { i, "nums[i]": nums[i], "new t": t + nums[i] }, `-${nums[i]} → t=${t + nums[i]}`);
         const b = solve(t + nums[i], i + 1, myId);
-        cs.push(`ts(t=${t},i=${i})`);
         treeNodes.find(tn => tn.id === `n${myId}`).status = "done";
         treeNodes.find(tn => tn.id === `n${myId}`).label = `${a + b} ways`;
         push(7, "ret", { add: a, sub: b, total: a + b }, `Return ${a}+${b}=${a + b}`);
@@ -85,24 +83,33 @@ nums = [1,1,1,1,1], target = 3
 Each level = one element, branches = +/−. Leaves at depth n, count those with sum == target.`
     },
     {
-        icon: "💡", title: "Code & Complexity", color: "#10b981",
-        content: `## Algorithm
-\`\`\`
-dfs(nums, i, sum, target):
-  if i == n: return sum == target ? 1 : 0
-  return dfs(i+1, sum + nums[i]) +
-         dfs(i+1, sum - nums[i])
-\`\`\`
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
 
-## Complexity
-| Metric | Value |
-|---|---|
-| Time (brute) | **O(2ⁿ)** — binary tree |
-| Time (memo) | **O(n × sum)** — with memoization |
-| Space | **O(n)** — recursion depth |
+### Line 1: Function Signature
+    int dfs(int[] nums, int i, int curSum, int target)
+i = current index, curSum = running sum of +/− choices so far.
 
-## DP Optimization
-Convert to subset sum: find subsets summing to (sum+target)/2.`
+### Line 2: Base Case
+    if (i == nums.length) return curSum == target ? 1 : 0;
+**WHY:** We've assigned +/− to ALL elements. If sum equals target → 1 way found! Otherwise → 0.
+
+### Line 3: Add Current Element
+    int add = dfs(nums, i+1, curSum + nums[i], target);
+**WHY +nums[i]?** Try assigning a **+** sign to this element. Explore all paths where we ADD it.
+
+### Line 4: Subtract Current Element
+    int sub = dfs(nums, i+1, curSum - nums[i], target);
+**WHY −nums[i]?** Try assigning a **−** sign to this element. Explore all paths where we SUBTRACT it.
+
+### Line 5: Count All Ways
+    return add + sub;
+**WHY add them?** We want TOTAL number of ways. Each branch finds independent valid assignments.
+
+## Time & Space Complexity
+- **Time:** O(2ⁿ) brute force — binary tree of +/− choices
+- **Time (memo):** O(n × totalSum) — memo on (index, currentSum)
+- **Space:** O(n) recursion depth`
     }
 ];
 

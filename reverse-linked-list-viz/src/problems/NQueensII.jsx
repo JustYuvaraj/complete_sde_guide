@@ -55,7 +55,7 @@ function gen(n) {
             snap(7, "place", { row, col }, `♛ Place at (${row},${col})`);
             count += solve(row + 1, myId);
             queens[row] = -1; colUsed.delete(col); d1.delete(row - col); d2.delete(row + col);
-            if (cnt < MAX) { cs.push(`nq(r=${row})`); snap(9, "remove", { row, col }, `Remove (${row},${col})`); cs.pop(); }
+            if (cnt < MAX) { snap(9, "remove", { row, col }, `Remove (${row},${col})`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
@@ -126,19 +126,43 @@ Same backtracking as N-Queens, just count++ instead of saving the board.`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Difference from N-Queens
+        content: `## Line-by-Line Breakdown
 
-### N-Queens I: Save board
-    if (row == n) { res.push_back(board); return; }
+### Line 1-2: Function Signature
+    int totalNQueens(int row, int n, set<int>& cols, set<int>& d1, set<int>& d2)
+Three sets track attacks: columns, diagonals (row−col), anti-diagonals (row+col).
 
-### N-Queens II: Count only
-    if (row == n) { count++; return; }
+### Line 3: Base Case
+    if (row == n) return 1;
+**WHY:** All n rows have a queen placed successfully → found 1 valid arrangement. Count it!
 
-Everything else is the same: try each column, check 3 constraints, place, recurse, remove.
+### Line 4-5: Try Each Column
+    int count = 0;
+    for (int col = 0; col < n; col++)
+**WHY:** For the current row, try placing a queen in every column.
+
+### Line 5-6: Conflict Check (O(1)!)
+    if (cols.count(col) || d1.count(row-col) || d2.count(row+col)) continue;
+**WHY 3 checks?**
+- **cols:** Another queen in same column?
+- **d1 (row−col):** Same left diagonal? (row−col is constant on \\\\)
+- **d2 (row+col):** Same right diagonal? (row+col is constant on /)
+
+### Line 7: Place Queen
+    place(row, col);  // add to cols, d1, d2
+**WHY sets?** O(1) lookup vs O(n) board scanning in N-Queens I.
+
+### Line 8: Recurse → Count
+    count += totalNQueens(row+1, ...);
+**WHY +=?** Accumulate solutions from ALL valid column placements.
+
+### Line 9: Remove Queen (Backtrack)
+    remove(row, col);  // remove from cols, d1, d2
+**WHY?** Restore state to try next column position.
 
 ## Time & Space Complexity
-- **Time:** O(n!) with pruning
-- **Space:** O(n) for sets/arrays + recursion depth`
+- **Time:** O(n!) with set-based pruning
+- **Space:** O(n) for 3 sets + recursion depth`
     },
 ];
 

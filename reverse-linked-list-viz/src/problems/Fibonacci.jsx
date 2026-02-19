@@ -31,6 +31,9 @@ function gen(n) {
         cs.push(`fib(${val})`);
         push(0, "call", { n: val }, `fib(${val})`);
 
+        // highlight the if-check line
+        push(1, val <= 1 ? "base" : "call", { n: val, "n<=1": val <= 1 }, val <= 1 ? `n=${val} ≤ 1 → base!` : `n=${val} > 1 → recurse`);
+
         if (val <= 1) {
             treeNodes.find(t => t.id === `n${myId}`).status = "base";
             treeNodes.find(t => t.id === `n${myId}`).label = `f(${val})=${val}`;
@@ -38,12 +41,14 @@ function gen(n) {
             cs.pop(); return val;
         }
 
+        // highlight line 2 before calling fib(n-1)
+        push(2, "call", { n: val, "calling": `fib(${val - 1})` }, `Calling fib(${val - 1})…`);
         const left = solve(val - 1, myId);
         if (cnt >= MAX) { cs.pop(); return 0; }
-        cs.push(`fib(${val})`);
+        // highlight line 2 before calling fib(n-2)
+        push(2, "call", { n: val, left, "calling": `fib(${val - 2})` }, `Got fib(${val - 1})=${left}, calling fib(${val - 2})…`);
         const right = solve(val - 2, myId);
         if (cnt >= MAX) { cs.pop(); return 0; }
-        cs.push(`fib(${val})`);
 
         const result = left + right;
         treeNodes.find(t => t.id === `n${myId}`).status = "done";

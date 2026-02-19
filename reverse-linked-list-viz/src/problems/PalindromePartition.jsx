@@ -52,7 +52,7 @@ function gen(s) {
             push(7, "cut", { sub: `"${sub}"`, start, end, cur: `[${cur.join("|")}]` }, `✂ Cut "${sub}" (palindrome ✓)`);
             solve(end + 1, myId);
             cur.pop();
-            if (cnt < MAX) { cs.push(`p(s=${start})`); push(9, "back", { removed: `"${sub}"`, cur: `[${cur.join("|")}]` }, `Remove "${sub}"`); cs.pop(); }
+            if (cnt < MAX) { push(9, "back", { removed: `"${sub}"`, cur: `[${cur.join("|")}]` }, `Remove "${sub}"`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
@@ -124,22 +124,38 @@ Result: [["a","a","b"], ["aa","b"]] ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Base Case
+### Line 1: Function Signature
+    void partition(string& s, int start, vector<string>& cur, vector<vector<string>>& res)
+start = current position in string, cur = palindromes collected so far.
+
+### Line 2-3: Base Case
     if (start == s.size()) { res.push_back(cur); return; }
-**WHY:** Entire string is partitioned into palindromes.
+**WHY:** Entire string has been partitioned into palindromes → save this partition!
 
-### Loop: Try All Cuts
-    for (int i = start; i < s.size(); i++)
-Check if s[start..i] is palindrome. If yes, add to cur, recurse from i+1.
+### Line 5: Try Every Cut Position
+    for (int end = start; end < s.size(); end++)
+**WHY:** Try cutting at every possible endpoint. s[start..end] is the candidate piece.
 
-### Palindrome Check
-    bool isPalin(s, l, r) { while(l<r) if(s[l++]!=s[r--]) return false; return true; }
-Simple two-pointer check.
+### Line 6: Palindrome Check
+    if (!isPalin(s, start, end)) continue;
+**WHY:** The cut piece MUST be a palindrome. Skip non-palindromes — no point recursing.
+
+### Line 7: Add the Palindrome
+    cur.push_back(s.substr(start, end-start+1));
+**WHY:** Found a palindrome substring! Add it to our partition.
+
+### Line 8: Recurse on Remaining String
+    partition(s, end+1, cur, res);
+**WHY end+1?** Start the next piece right after the current one ends.
+
+### Line 9: Backtrack
+    cur.pop_back();
+**WHY?** Remove the palindrome we just added to try a longer cut at this position.
 
 ## Time & Space Complexity
-- **Time:** O(n × 2^n) — 2^n possible partitions, O(n) palindrome check
+- **Time:** O(n × 2ⁿ) — up to 2ⁿ partitions, O(n) palindrome check each
 - **Space:** O(n) recursion depth`
     },
 ];

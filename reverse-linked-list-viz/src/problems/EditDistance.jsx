@@ -32,16 +32,16 @@ function gen(a, b) {
         if (j >= b.length) { const r = a.length - i; treeNodes.find(t => t.id === `n${myId}`).status = "base"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`; push(2, "base", { return: r }, `B end → ${r}`); cs.pop(); memo[key] = r; return r; }
         if (a[i] === b[j]) {
             push(3, "match", { "a[i]": a[i] }, `Match '${a[i]}'`);
-            const r = solve(i + 1, j + 1, myId); cs.push(`ed(${i},${j})`);
+            const r = solve(i + 1, j + 1, myId);
             treeNodes.find(t => t.id === `n${myId}`).status = "done"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`;
             push(4, "ret", { return: r }, `Match → ${r}`); cs.pop(); memo[key] = r; return r;
         }
         push(5, "ins", { "a[i]": a[i], "b[j]": b[j] }, `Try insert`);
-        const ins = 1 + solve(i, j + 1, myId); cs.push(`ed(${i},${j})`);
+        const ins = 1 + solve(i, j + 1, myId);
         push(6, "del", {}, `Try delete`);
-        const del = 1 + solve(i + 1, j, myId); cs.push(`ed(${i},${j})`);
+        const del = 1 + solve(i + 1, j, myId);
         push(7, "rep", {}, `Try replace`);
-        const rep = 1 + solve(i + 1, j + 1, myId); cs.push(`ed(${i},${j})`);
+        const rep = 1 + solve(i + 1, j + 1, myId);
         const r = Math.min(ins, del, rep);
         treeNodes.find(t => t.id === `n${myId}`).status = "done"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`;
         push(8, "ret", { ins, del, rep, best: r }, `min(${ins},${del},${rep})=${r}`); cs.pop(); memo[key] = r; return r;
@@ -102,26 +102,44 @@ Answer: **3** operations ✅
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Match
-    if (w1[i] == w2[j]) dp[i][j] = dp[i-1][j-1]
-**WHY:** No operation needed!
+### Line 1: Function Signature
+    int editDist(string& a, string& b, int i, int j)
+Pointers i and j scan strings A and B from left to right.
 
-### Mismatch
-    dp[i][j] = 1 + min(
-        dp[i-1][j],    // delete from w1
-        dp[i][j-1],    // insert into w1
-        dp[i-1][j-1]   // replace in w1
-    )
+### Line 2: Base Case — A exhausted
+    if (i >= a.size()) return b.size() - j;
+**WHY:** If A is done but B still has chars, we need to INSERT all remaining B chars. Cost = (b.size() - j).
 
-### Base Cases
-- dp[i][0] = i (delete all chars from w1)
-- dp[0][j] = j (insert all chars of w2)
+### Line 3: Base Case — B exhausted
+    if (j >= b.size()) return a.size() - i;
+**WHY:** If B is done but A still has chars, we need to DELETE all remaining A chars. Cost = (a.size() - i).
+
+### Line 4-5: Characters Match
+    if (a[i] == b[j])
+        return editDist(a, b, i+1, j+1);
+**WHY 0 cost?** Characters already match — no edit needed! Just advance both pointers.
+
+### Line 6: Try Insert
+    int ins = 1 + editDist(a, b, i, j+1);
+**WHY i stays, j+1?** We "insert" b[j] into A. A's pointer stays (we haven't consumed a[i] yet), B advances.
+
+### Line 7: Try Delete
+    int del = 1 + editDist(a, b, i+1, j);
+**WHY i+1, j stays?** We "delete" a[i]. Skip over it, B's pointer stays (b[j] still needs matching).
+
+### Line 8: Try Replace
+    int rep = 1 + editDist(a, b, i+1, j+1);
+**WHY both advance?** We "replace" a[i] with b[j]. Both chars are handled, advance both.
+
+### Line 9: Take the Best
+    return min({ins, del, rep});
+**WHY min?** We want the MINIMUM number of operations, so take the cheapest option.
 
 ## Time & Space Complexity
-- **Time:** O(m × n)
-- **Space:** O(m × n), or O(n) with rolling array`
+- **Time:** O(m × n) with memoization
+- **Space:** O(m × n) for memo, O(m+n) recursion depth`
     },
 ];
 

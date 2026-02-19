@@ -28,12 +28,10 @@ function gen(coins, amount) {
         if (amt < 0 || i >= coins.length) { treeNodes.find(t => t.id === `n${myId}`).status = "pruned"; treeNodes.find(t => t.id === `n${myId}`).label = `✗`; push(2, "prune", { amt, i }, `✂ ${amt < 0 ? "neg" : "end"}`); cs.pop(); return 0; }
         push(3, "skip", { i, "coin": coins[i] }, `Skip coin ${coins[i]}`);
         const sk = solve(amt, i + 1, myId);
-        cs.push(`ch(${amt},i=${i})`);
         cur.push(coins[i]);
         push(4, "take", { i, "coin": coins[i], "new amt": amt - coins[i] }, `Take coin ${coins[i]}`);
         const tk = solve(amt - coins[i], i, myId);
         cur.pop();
-        cs.push(`ch(${amt},i=${i})`);
         const r = sk + tk;
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         treeNodes.find(t => t.id === `n${myId}`).label = `${r}`;
@@ -80,23 +78,36 @@ Result: **4** ways ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Why outer loop = coins?
-Prevents counting permutations. Each coin is considered only once per "layer".
+### Line 1: Function Signature
+    int change(int[] coins, int amount, int i)
+amount = remaining target, i = current coin index.
 
-### Inner loop
-    for (int a = c; a <= amount; a++)
-        dp[a] += dp[a - c];
-**WHY a from c?** Can't use coin c if amount < c.
+### Line 2: Base Case — Found!
+    if (amount == 0) return 1;
+**WHY:** Amount is exactly 0 → this combination works! Count it as 1 valid way.
 
-### vs Coin Change I
-- CC I: dp[a] = **min**(dp[a], dp[a-c] + 1)
-- CC II: dp[a] **+=** dp[a-c]
+### Line 3: Base Case — Failed
+    if (amount < 0 || i >= coins.length) return 0;
+**WHY:** Overshot OR ran out of coin types → this path is invalid.
+
+### Line 4: Skip This Coin Type
+    int skip = change(coins, amount, i + 1);
+**WHY i+1?** Don't use coin[i] anymore. Move to next coin denomination.
+
+### Line 5: Take This Coin
+    int take = change(coins, amount - coins[i], i);
+**WHY amount − coins[i]?** Use one coin of this type, reduce remaining amount.
+**WHY i (not i+1)?** Can use the SAME coin type again (unlimited supply).
+
+### Line 6: Total Ways
+    return skip + take;
+**WHY add?** Total ways = ways without this coin + ways using this coin. Both are independent counts.
 
 ## Time & Space Complexity
-- **Time:** O(amount × n) where n = number of coins
-- **Space:** O(amount) for DP array`
+- **Time:** O(amount × n) with memoization
+- **Space:** O(amount × n) for memo, O(amount) with 1D DP`
     },
 ];
 

@@ -38,7 +38,6 @@ function gen(nums) {
         push(4, "include", { i, "nums[i]": nums[i], "new rem": rem - nums[i], picked: `[${picked}]` }, `Include ${nums[i]} → rem=${rem - nums[i]}`);
         if (solve(i + 1, rem - nums[i], myId)) { treeNodes.find(t => t.id === `n${myId}`).status = "done"; cs.pop(); return true; }
         picked.pop();
-        cs.push(`cp(i=${i},r=${rem})`);
         push(7, "skip", { i, "nums[i]": nums[i], rem }, `Skip ${nums[i]}`);
         const r = solve(i + 1, rem, myId);
         treeNodes.find(t => t.id === `n${myId}`).status = r ? "done" : "pruned";
@@ -81,23 +80,43 @@ Boolean dp[j] = can we make sum j using elements so far?`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Quick Check
+### Line 1: Quick Check Before Recursion
     if (totalSum % 2 != 0) return false;
-Odd total can never be split equally.
+**WHY:** If total is odd, it's IMPOSSIBLE to split into two equal halves. Exit immediately!
 
-### Subset Sum DP
-    dp[0] = true
-    for each num: for j = target down to num:
-        dp[j] = dp[j] || dp[j - num]
+### Line 2: Set Target
+    int target = totalSum / 2;
+**WHY:** If we find a subset that sums to half the total, the remaining elements automatically sum to the other half.
 
-### Why iterate backwards?
-Prevents using same element twice (0/1 Knapsack pattern).
+### Line 3: Function Signature
+    bool canPartition(int[] nums, int i, int rem)
+i = current index, rem = remaining target sum to achieve.
+
+### Line 4: Base Case — Found!
+    if (rem == 0) return true;
+**WHY:** Remaining is 0 → we've found a subset that sums to exactly target. 
+
+### Line 5: Base Case — Failed
+    if (i >= n || rem < 0) return false;
+**WHY:** No elements left OR we overshot the target → this path failed.
+
+### Line 6: Include Current Element
+    bool include = canPartition(nums, i+1, rem - nums[i]);
+**WHY rem − nums[i]?** Put this element in the subset. Remaining target decreases by its value.
+
+### Line 7: Exclude Current Element
+    bool exclude = canPartition(nums, i+1, rem);
+**WHY rem unchanged?** Don't use this element. Target stays same, move to next.
+
+### Line 8: Either Path Works
+    return include || exclude;
+**WHY ||?** We only need ONE valid subset. If either including or excluding works, answer is true.
 
 ## Time & Space Complexity
-- **Time:** O(n × sum/2)
-- **Space:** O(sum/2) for 1D DP array`
+- **Time:** O(n × sum/2) with memoization
+- **Space:** O(n × sum/2) for memo, O(n) recursion depth`
     },
 ];
 

@@ -81,21 +81,39 @@ Find the **minimum number of coins** to make a target amount. Coins can be used 
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Base Case
+### Line 1: Function Signature
+    int coinChange(int[] coins, int amount)
+Returns minimum number of coins to make the given amount.
+
+### Line 2: Base Case — Exact Change
     if (amount == 0) return 0;
+**WHY:** Amount is exactly 0 → no coins needed! This is the success case.
+
+### Line 3: Base Case — Overshot
     if (amount < 0) return -1;
+**WHY:** We went below 0 → this path used too much. Return -1 (impossible).
 
-### Recursive Choice
-    for each coin: result = min(result, 1 + solve(amount - coin))
+### Line 4-5: Try Each Coin
+    int best = INT_MAX;
+    for (int coin : coins) {
+        int sub = coinChange(coins, amount - coin);
+**WHY amount − coin?** Use one coin of this denomination, reduce the remaining amount.
+**WHY try ALL coins?** We don't know which coin leads to the fewest total coins.
 
-### Memoization
-Without memo: exponential. With memo/DP: O(amount × coins).
+### Line 6: Track the Minimum
+    if (sub != -1) best = min(best, sub + 1);
+**WHY sub + 1?** The +1 counts the coin we just used.
+**WHY check != -1?** Skip impossible paths (amount went negative).
+
+### Line 7: Return Result
+    return best == INT_MAX ? -1 : best;
+**WHY -1?** If no coin combination works, return -1 (impossible).
 
 ## Time & Space Complexity
-- **Time:** O(amount × n) where n = number of coin types
-- **Space:** O(amount) for DP array`
+- **Time:** O(amount × n) with memoization, where n = coin types
+- **Space:** O(amount) for memo/DP array`
     },
 ];
 

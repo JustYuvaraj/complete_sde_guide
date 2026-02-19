@@ -32,6 +32,9 @@ function gen(n) {
         cs.push(`f(${val})`);
         push(0, "call", { n: val }, `factorial(${val})`);
 
+        // highlight the if-check line
+        push(1, val <= 1 ? "base" : "call", { n: val, "n<=1": val <= 1 }, val <= 1 ? `n=${val} ≤ 1 → base case!` : `n=${val} > 1 → recurse`);
+
         if (val <= 1) {
             treeNodes.find(t => t.id === `n${myId}`).status = "base";
             treeNodes.find(t => t.id === `n${myId}`).label = `f(${val})=1`;
@@ -40,8 +43,9 @@ function gen(n) {
             return 1;
         }
 
+        // highlight the recursive call line before making the call
+        push(2, "call", { n: val, "calling": `f(${val - 1})` }, `Calling factorial(${val - 1})…`);
         const sub = solve(val - 1, myId);
-        cs.push(`f(${val})`);
         const result = val * sub;
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         treeNodes.find(t => t.id === `n${myId}`).label = `f(${val})=${result}`;

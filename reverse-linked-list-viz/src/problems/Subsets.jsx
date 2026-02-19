@@ -50,7 +50,6 @@ function gen(nums) {
         solve(i + 1, myId);
 
         cur.pop();
-        cs.push(`sub(i=${i})`);
         push(8, "back", { i, cur: `[${cur}]` }, `Backtrack: rm ${nums[i]}`);
 
         push(10, "exclude", { i, "nums[i]": nums[i], cur: `[${cur}]` }, `Exclude ${nums[i]}`);

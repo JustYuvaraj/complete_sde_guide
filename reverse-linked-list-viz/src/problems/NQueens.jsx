@@ -75,7 +75,7 @@ function gen(n) {
             snap(7, "place", { row, col, _cell: [row, col] }, `♛ Place queen at (${row}, ${col})`);
             solve(row + 1, myId);
             queens[row] = -1; colUsed.delete(col); d1.delete(row - col); d2.delete(row + col);
-            if (cnt < MAX) { cs.push(`nq(r=${row})`); snap(9, "remove", { row, col, _cell: [row, col] }, `Remove queen from (${row}, ${col})`); cs.pop(); }
+            if (cnt < MAX) { snap(9, "remove", { row, col, _cell: [row, col] }, `Remove queen from (${row}, ${col})`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
@@ -177,20 +177,33 @@ Result: 2 solutions for n=4 ✅`
         icon: "💻", title: "Code Logic", color: "#10b981",
         content: `## Line-by-Line Breakdown
 
-### Base Case: row == n
-All rows filled successfully → found a valid solution. Save the board.
+### Line 1: Function Signature
+    void solveNQueens(board, row, n, res)
+Takes the board, current row to fill, board size n, and result vector.
 
-### Validity Check
-For each column in current row, check:
-- **Column conflict:** Is any queen in this column?
-- **Diagonal \\:** Is row-col same as any placed queen?
-- **Anti-diagonal /:** Is row+col same as any placed queen?
+### Line 2-3: Base Case
+    if (row == n) { res.push_back(board); return; }
+**WHY:** If we've placed queens in ALL n rows successfully, we found a valid solution. Save it!
 
-### Backtracking
-Place queen → recurse next row → remove queen → try next column.
+### Line 4: Try Each Column
+    for (int col = 0; col < n; col++)
+**WHY:** For the current row, try placing a queen in every column. Only valid ones proceed.
+
+### Line 5: Safety Check
+    if (isSafe(board, row, col))
+**WHY:** Before placing, check 3 things:
+- **Column:** No queen directly above in same column
+- **Left diagonal \\\\:** Check (row-1,col-1), (row-2,col-2)...
+- **Right diagonal /:** Check (row-1,col+1), (row-2,col+2)...
+
+### Line 6-8: Place → Recurse → Remove
+    board[row][col] = 'Q';
+    solveNQueens(board, row+1, n, res);
+    board[row][col] = '.';   // backtrack
+**WHY backtrack?** After exploring all possibilities with queen at (row,col), remove it to try the next column.
 
 ## Time & Space Complexity
-- **Time:** O(n!) — n choices for row 0, (n-1) for row 1, etc.
+- **Time:** O(n!) — n choices for row 0, ~(n-1) for row 1, etc.
 - **Space:** O(n²) for the board + O(n) recursion depth`
     },
 ];

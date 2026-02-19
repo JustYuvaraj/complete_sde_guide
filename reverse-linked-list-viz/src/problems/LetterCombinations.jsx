@@ -51,7 +51,7 @@ function gen(digits) {
             push(7, "pick", { char: ch, cur: `"${cur}"` }, `Pick '${ch}' → "${cur}"`);
             solve(i + 1, myId);
             cur = cur.slice(0, -1);
-            if (cnt < MAX) { cs.push(`lc(i=${i})`); push(9, "back", { removed: ch, cur: `"${cur}"` }, `Remove '${ch}' ← "${cur}"`); cs.pop(); }
+            if (cnt < MAX) { push(9, "back", { removed: ch, cur: `"${cur}"` }, `Remove '${ch}' ← "${cur}"`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();

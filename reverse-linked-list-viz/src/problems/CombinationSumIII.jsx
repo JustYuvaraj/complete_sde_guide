@@ -50,9 +50,7 @@ function gen(k, n) {
             push(5, "pick", { i, "new rem": rem - i, cur: `[${cur}]` }, `Pick ${i} → rem=${rem - i}`);
             solve(rem - i, i + 1, myId);
             cur.pop();
-            cs.push(`c3(rem=${rem},s=${start})`);
             push(7, "back", { i, cur: `[${cur}]` }, `Backtrack: rm ${i}`);
-            cs.pop();
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();

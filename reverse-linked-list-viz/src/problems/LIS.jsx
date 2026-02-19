@@ -31,12 +31,10 @@ function gen(nums) {
         if (i >= nums.length) { treeNodes.find(t => t.id === `n${myId}`).status = "base"; treeNodes.find(t => t.id === `n${myId}`).label = `0`; push(1, "base", { return: 0 }, `End → 0`); cs.pop(); memo[key] = 0; return 0; }
         push(3, "skip", { i, "nums[i]": nums[i] }, `Skip ${nums[i]}`);
         const sk = solve(i + 1, prevIdx, myId);
-        cs.push(`lis(${i},p=${prevLabel})`);
         let tk = 0;
         if (prevIdx === -1 || nums[i] > nums[prevIdx]) {
             push(6, "take", { i, "nums[i]": nums[i] }, `Take ${nums[i]}`);
             tk = 1 + solve(i + 1, i, myId);
-            cs.push(`lis(${i},p=${prevLabel})`);
         } else {
             push(5, "cant", { i, "nums[i]": nums[i], "prev": nums[prevIdx] }, `Can't take: ${nums[i]}≤${nums[prevIdx]}`);
         }
@@ -94,21 +92,34 @@ Answer: max(dp) = **4** ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### O(n²) DP
-    for i: for j < i: if nums[j] < nums[i]: dp[i] = max(dp[i], dp[j]+1)
+### Line 1: Function Signature
+    int lis(int[] nums, int i, int prev)
+i = current index, prev = last element included in our subsequence.
 
-### O(n log n) with Binary Search
-Maintain a "tails" array:
-- If num > last element: append (extends LIS)
-- Else: binary search for position to replace
+### Line 2: Base Case
+    if (i >= nums.length) return 0;
+**WHY:** No more elements to consider → subsequence can't grow further.
 
-Length of tails array = LIS length!
+### Line 3: Skip Current Element
+    int skip = lis(nums, i+1, prev);
+**WHY:** Maybe including this element won't lead to the longest result. Move to next element, prev stays same.
+
+### Line 4-5: Take Current Element (if valid)
+    int take = 0;
+    if (nums[i] > prev) take = 1 + lis(nums, i+1, nums[i]);
+**WHY nums[i] > prev?** The subsequence must be **strictly increasing**. We can only include nums[i] if it's larger than the last included element.
+**WHY 1 +?** We're including this element, so length increases by 1.
+**WHY prev=nums[i]?** This element becomes the new "last included" for future decisions.
+
+### Line 6: Choose the Best
+    return max(skip, take);
+**WHY max?** We want the LONGEST increasing subsequence, so take whichever path gives more length.
 
 ## Time & Space Complexity
-- **Time:** O(n²) DP, O(n log n) with patience sorting
-- **Space:** O(n) for dp/tails array`
+- **Time:** O(n²) with memoization — each (i, prev) pair solved once
+- **Space:** O(n²) for memo, O(n) recursion depth`
     },
 ];
 

@@ -48,9 +48,7 @@ function gen(cands, target) {
             push(6, "pick", { i, "c[i]": sorted[i], "new t": t - sorted[i], cur: `[${cur}]` }, `Pick ${sorted[i]} → t=${t - sorted[i]}`);
             solve(t - sorted[i], i + 1, myId);
             cur.pop();
-            cs.push(`cs(t=${t},s=${start})`);
             push(8, "back", { i, removed: sorted[i], cur: `[${cur}]` }, `Backtrack: rm ${sorted[i]}`);
-            cs.pop();
         }
         treeNodes.find(tn => tn.id === `n${myId}`).status = "done";
         cs.pop();

@@ -28,10 +28,8 @@ function gen(W, wts, vals) {
         if (wts[i] > w) { push(2, "nofit", { i, "wt[i]": wts[i], W: w }, `wt=${wts[i]} > W=${w}, skip`); const r = solve(w, i - 1, myId); treeNodes.find(t => t.id === `n${myId}`).status = "done"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`; push(3, "ret", { return: r }, `Return ${r}`); cs.pop(); return r; }
         push(4, "skip", { i, decision: "SKIP" }, `Try skip item ${i}`);
         const sk = solve(w, i - 1, myId);
-        cs.push(`ks(W=${w},i=${i})`);
         push(5, "take", { i, "val[i]": vals[i], decision: "TAKE", "new W": w - wts[i] }, `Try take item ${i}`);
         const tk = vals[i] + solve(w - wts[i], i - 1, myId);
-        cs.push(`ks(W=${w},i=${i})`);
         const best = Math.max(sk, tk);
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         treeNodes.find(t => t.id === `n${myId}`).label = `${best}`;
@@ -76,21 +74,33 @@ Can use 1D array, iterating weight from high to low:
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Base Case
-    dp[0][w] = 0 for all w (no items = 0 value)
-    dp[i][0] = 0 for all i (no capacity = 0 value)
+### Line 1: Function Signature
+    int knapsack(int W, int[] wt, int[] val, int i)
+W = remaining capacity, i = current item index.
 
-### Why iterate w from high to low (1D)?
-Prevents using same item twice. High-to-low ensures dp[w-weight[i]] is from previous item's row.
+### Line 2: Base Case
+    if (i >= n || W == 0) return 0;
+**WHY:** No items left OR no capacity left → can't gain any more value.
 
-### Trace Back Solution
-To find WHICH items: check if dp[i][w] != dp[i-1][w]. If different, item i was taken.
+### Line 3: Skip Current Item
+    int skip = knapsack(W, wt, val, i+1);
+**WHY:** Maybe this item isn't worth taking. Move to next item, keep same capacity.
+
+### Line 4-5: Take Current Item (if it fits)
+    int take = 0;
+    if (wt[i] <= W) take = val[i] + knapsack(W - wt[i], wt, val, i+1);
+**WHY wt[i] <= W?** Can only take if it fits! After taking: gain val[i] profit, reduce capacity by wt[i].
+**WHY i+1?** Each item used at most once (0/1 Knapsack). If unlimited, use i instead.
+
+### Line 6: Choose the Best
+    return max(skip, take);
+**WHY max?** We want MAXIMUM value. Compare taking vs skipping and pick the better option.
 
 ## Time & Space Complexity
-- **Time:** O(n × W) where n = items, W = capacity
-- **Space:** O(W) with 1D optimization`
+- **Time:** O(n × W) with memoization — each (i, W) pair solved once
+- **Space:** O(n × W) for memo, O(n) recursion depth`
     },
 ];
 

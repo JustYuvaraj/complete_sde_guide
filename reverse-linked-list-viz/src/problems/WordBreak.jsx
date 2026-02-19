@@ -107,24 +107,39 @@ s = "leetcode", dict = ["leet", "code"]
 Brute-force tries all segmentations (exponential). DP caches whether each prefix is breakable, giving O(n²) or O(n × W).`
     },
     {
-        icon: "💡", title: "Code & Complexity", color: "#10b981",
-        content: `## Algorithm
-\`\`\`
-dp[0] = true
-for i = 1 to n:
-  for each word in dict:
-    if i >= word.len &&
-       dp[i - word.len] &&
-       s[i-word.len..i] == word:
-      dp[i] = true; break
-return dp[n]
-\`\`\`
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
 
-## Complexity
-| Metric | Value |
-|---|---|
-| Time | **O(n × m × k)** — n=len, m=words, k=avg word len |
-| Space | **O(n)** — dp array |`
+### Line 2-3: Initialize DP
+    vector<bool> dp(n+1, false);
+    dp[0] = true;
+**WHY dp[0]=true?** Empty string is trivially "breakable." This seeds the DP.
+
+### Line 4: Outer Loop — Check Each Position
+    for (int i = 1; i <= n; i++)
+**WHY:** For each ending position i, check if s[0..i-1] can be segmented.
+
+### Line 5: Inner Loop — Try All Split Points
+    for (int j = 0; j < i; j++)
+**WHY:** Try splitting at every position j. This means s[0..j-1] and s[j..i-1].
+
+### Line 6: Extract Substring
+    string sub = s.substr(j, i-j);
+**WHY j to i?** This is the candidate word we're checking against the dictionary.
+
+### Line 7-8: The Key Check
+    if (dp[j] && dict.count(sub)) { dp[i] = true; break; }
+**WHY dp[j]?** s[0..j-1] must already be breakable — i.e., all characters before this word are valid.
+**WHY dict.count(sub)?** The word s[j..i-1] must exist in the dictionary.
+**WHY break?** One valid split is enough! No need to check other positions.
+
+### Line 12: Answer
+    return dp[n];
+**WHY dp[n]?** Tells us if the ENTIRE string is breakable.
+
+## Time & Space Complexity
+- **Time:** O(n² × k) where n=string length, k=avg word length for substring
+- **Space:** O(n) for dp array`
     }
 ];
 

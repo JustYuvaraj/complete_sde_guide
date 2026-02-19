@@ -30,16 +30,13 @@ function gen(a, b) {
         if (a[i] === b[j]) {
             push(2, "match", { "a[i]": a[i] }, `Match '${a[i]}'`);
             const r = 1 + solve(i + 1, j + 1, myId);
-            cs.push(`lcs(${i},${j})`);
             treeNodes.find(t => t.id === `n${myId}`).status = "done"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`;
             push(3, "ret", { return: r }, `1+sub=${r}`); cs.pop(); memo[key] = r; return r;
         }
         push(4, "skipA", { "a[i]": a[i], "b[j]": b[j] }, `No match → skip A`);
         const sa = solve(i + 1, j, myId);
-        cs.push(`lcs(${i},${j})`);
         push(5, "skipB", {}, `Skip B`);
         const sb = solve(i, j + 1, myId);
-        cs.push(`lcs(${i},${j})`);
         const r = Math.max(sa, sb);
         treeNodes.find(t => t.id === `n${myId}`).status = "done"; treeNodes.find(t => t.id === `n${myId}`).label = `${r}`;
         push(6, "ret", { skipA: sa, skipB: sb, best: r }, `max(${sa},${sb})=${r}`); cs.pop(); memo[key] = r; return r;
@@ -96,22 +93,37 @@ Answer: dp[5][3] = **3** → "ace" ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Match
-    if (s1[i] == s2[j]) dp[i][j] = dp[i-1][j-1] + 1
-**WHY i-1,j-1?** Both characters consumed in the match.
+### Line 1: Function Signature
+    int lcs(string& a, string& b, int i, int j)
+Two pointers — i scans string A, j scans string B.
 
-### Skip
-    else dp[i][j] = max(dp[i-1][j], dp[i][j-1])
-**WHY max?** Try skipping from either string, take better result.
+### Line 2: Base Case
+    if (i >= a.size() || j >= b.size()) return 0;
+**WHY:** If either string is exhausted, no more characters to match → 0.
 
-### Reconstruct LCS
-Trace back from dp[m][n]: if chars match, it's in the LCS.
+### Line 3-4: Characters Match
+    if (a[i] == b[j])
+        return 1 + lcs(a, b, i+1, j+1);
+**WHY +1?** We found a common character! Count it and advance BOTH pointers.
+**WHY i+1, j+1?** Both characters are "consumed" — move past them.
+
+### Line 5: Skip from A
+    int skipA = lcs(a, b, i+1, j);
+**WHY:** Characters don't match. Try skipping current char from A — maybe a later char in A matches b[j].
+
+### Line 6: Skip from B
+    int skipB = lcs(a, b, i, j+1);
+**WHY:** Also try skipping current char from B — maybe a[i] matches a later char in B.
+
+### Line 7: Take the Best
+    return max(skipA, skipB);
+**WHY max?** We don't know which skip leads to a longer subsequence, so try both and take the better one.
 
 ## Time & Space Complexity
-- **Time:** O(m × n) where m, n = string lengths
-- **Space:** O(m × n), or O(min(m,n)) with optimization`
+- **Time:** O(m × n) with memoization — each (i,j) pair solved once
+- **Space:** O(m × n) for memo table, O(m+n) recursion depth`
     },
 ];
 

@@ -104,25 +104,41 @@ Try every split point. At each split, either the halves match directly (no swap)
 Before recursing, check if both strings have the same character frequencies. If not, immediately return false.`
     },
     {
-        icon: "💡", title: "Code & Complexity", color: "#10b981",
-        content: `## Algorithm
-\`\`\`
-isScramble(s1, s2):
-  if s1 == s2: return true
-  if sorted(s1) != sorted(s2): return false
-  for i = 1 to n-1:
-    if (isScramble(s1[:i], s2[:i]) && isScramble(s1[i:], s2[i:]))
-      return true  // no swap
-    if (isScramble(s1[:i], s2[n-i:]) && isScramble(s1[i:], s2[:n-i]))
-      return true  // swap
-  return false
-\`\`\`
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
 
-## Complexity
-| Metric | Value |
-|---|---|
-| Time | **O(n⁴)** with memoization |
-| Space | **O(n³)** — memo table |`
+### Line 1: Function Signature
+    bool isScramble(string s1, string s2)
+Check if s2 is a scrambled version of s1.
+
+### Line 2: Base Case — Equal
+    if (s1 == s2) return true;
+**WHY:** If strings are identical, trivially a valid scramble (no swaps needed).
+
+### Line 3: Anagram Check (Pruning!)
+    if (sorted(s1) != sorted(s2)) return false;
+**WHY:** If they don't have the same characters, it's IMPOSSIBLE for one to be a scramble of the other. This prunes most branches early!
+
+### Line 4: Try Every Split Point
+    for (int i = 1; i < n; i++)
+**WHY 1 to n-1?** Split s1 into left (s1[0..i-1]) and right (s1[i..n-1]). Both halves must be non-empty.
+
+### Line 5-6: No-Swap Check
+    if (isScramble(s1[:i], s2[:i]) && isScramble(s1[i:], s2[i:]))
+        return true;
+**WHY:** If we DON'T swap at this split, left matches left and right matches right.
+
+### Line 7-8: Swap Check (The Key Insight!)
+    if (isScramble(s1[:i], s2[n-i:]) && isScramble(s1[i:], s2[:n-i]))
+        return true;  
+**WHY s2[n-i:]?** If we SWAP the halves, s1's left (length i) should match s2's RIGHT end (last i chars), and s1's right should match s2's LEFT beginning.
+
+### Line 9: No Split Worked
+    return false;
+
+## Time & Space Complexity
+- **Time:** O(n⁴) with memoization
+- **Space:** O(n³) for memo table (all possible s1,s2 substrings)`
     }
 ];
 

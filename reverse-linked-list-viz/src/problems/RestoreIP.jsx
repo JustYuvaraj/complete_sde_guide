@@ -67,7 +67,7 @@ function gen(s) {
             push(10, "try", { seg, cur: cur.join(".") }, `Try "${seg}" → ${cur.join(".")}`);
             solve(start + len, parts + 1, myId);
             cur.pop();
-            if (cnt < MAX) { cs.push(`ip(s=${start},p=${parts})`); push(12, "back", { removed: seg }, `Remove "${seg}"`); cs.pop(); }
+            if (cnt < MAX) { push(12, "back", { removed: seg }, `Remove "${seg}"`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
@@ -137,23 +137,42 @@ Invalid attempts pruned:
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Recursion with segment count
-    solve(s, start, segments, current)
-When segments == 4 and start == s.length: found valid IP.
+### Line 1: Function Signature
+    void restoreIp(string& s, int start, int parts, vector<string>& cur, vector<string>& res)
+start = position in string, parts = segments placed so far.
 
-### Validation
-- Length check: segment 1-3 chars
-- Range check: value 0-255
-- Leading zero: only "0" itself, not "01", "00"
+### Line 2-3: Success — Valid IP!
+    if (parts == 4 && start == s.size()) { res.push_back(join(cur,".")); return; }
+**WHY both conditions?** We need EXACTLY 4 segments AND ALL digits must be used. One without the other is invalid.
 
-### Pruning
-If remaining chars too few or too many for remaining segments, skip early.
+### Line 5: Prune — Dead End
+    if (parts == 4 || start >= s.size()) return;
+**WHY:** Already 4 parts but digits remain (parts==4) OR no digits left but need more parts (start>=size). Either way, impossible.
+
+### Line 6: Try Segment Lengths 1-3
+    for (int len = 1; len <= 3; len++)
+**WHY 1 to 3?** Each IP segment is 1-3 digits long (e.g., "0", "25", "255").
+
+### Line 7: Bounds Check
+    if (start+len > s.size()) break;
+**WHY break?** Not enough digits left for this length — and longer won't work either.
+
+### Line 8-9: Validate Segment
+    string seg = s.substr(start, len);
+    if (!isValid(seg)) continue;
+**WHY validate?** Must check: value 0-255, no leading zeros ("01" invalid, "0" ok).
+
+### Line 10-12: Add → Recurse → Backtrack
+    cur.push_back(seg);
+    restoreIp(s, start+len, parts+1, ...);
+    cur.pop_back();
+**WHY parts+1?** We just placed one more segment. Start advances past the digits we used.
 
 ## Time & Space Complexity
-- **Time:** O(1) — bounded by at most 3^4 = 81 choices
-- **Space:** O(1) — at most 4 levels deep`
+- **Time:** O(1) — at most 3⁴ = 81 combinations to try
+- **Space:** O(1) — at most 4 recursion levels deep`
     },
 ];
 

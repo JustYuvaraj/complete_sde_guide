@@ -50,7 +50,7 @@ function gen(nums) {
             push(9, "swap", { i, start, arr: `[${arr}]` }, `swap(${start},${i}) → [${arr}]`);
             solve(start + 1, myId);
             [arr[start], arr[i]] = [arr[i], arr[start]];
-            if (cnt < MAX) { cs.push(`p(s=${start})`); push(11, "back", { i, arr: `[${arr}]` }, `unswap(${start},${i})`); cs.pop(); }
+            if (cnt < MAX) { push(11, "back", { i, arr: `[${arr}]` }, `unswap(${start},${i})`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();

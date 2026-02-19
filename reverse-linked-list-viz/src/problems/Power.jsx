@@ -49,13 +49,11 @@ function gen(x, n) {
         if (exp % 2 === 0) {
             push(3, "even", { n: exp, strategy: "halve" }, `Even: pow(${base},${exp / 2}) then square`);
             const half = solve(base, exp / 2, myId);
-            cs.push(`pow(${base},${exp})`);
             result = half * half;
             push(5, "ret", { half, result: +result.toFixed(6) }, `${half} × ${half} = ${+result.toFixed(6)}`);
         } else {
             push(7, "odd", { n: exp, strategy: "subtract 1" }, `Odd: ${base} × pow(${base},${exp - 1})`);
             const sub = solve(base, exp - 1, myId);
-            cs.push(`pow(${base},${exp})`);
             result = base * sub;
             push(7, "ret", { x: base, sub: +sub.toFixed(6), result: +result.toFixed(6) }, `${base} × ${+sub.toFixed(6)} = ${+result.toFixed(6)}`);
         }

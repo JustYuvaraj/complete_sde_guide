@@ -52,7 +52,7 @@ function gen(s, dict) {
             push(8, "match", { sub: `"${sub}"`, cur: `[${cur.join(" ")}]` }, `"${sub}" ∈ dict → add`);
             solve(end, myId);
             cur.pop();
-            if (cnt < MAX) { cs.push(`wb(s=${start})`); push(10, "back", { removed: `"${sub}"` }, `Remove "${sub}"`); cs.pop(); }
+            if (cnt < MAX) { push(10, "back", { removed: `"${sub}"` }, `Remove "${sub}"`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
@@ -90,25 +90,41 @@ s = "catsanddog", dict = ["cat","cats","and","sand","dog"]
 Use memoization to cache results for each suffix. Avoids recomputing the same subproblem.`
     },
     {
-        icon: "💡", title: "Code & Complexity", color: "#10b981",
-        content: `## Algorithm
-\`\`\`
-dfs(s, start, path):
-  if start == s.length:
-    results.add(path.join(" "))
-    return
-  for each word in dict:
-    if s[start..] startsWith word:
-      path.push(word)
-      dfs(s, start + word.length, path)
-      path.pop()  // backtrack
-\`\`\`
+        icon: "💻", title: "Code Logic", color: "#10b981",
+        content: `## Line-by-Line Breakdown
 
-## Complexity
-| Metric | Value |
-|---|---|
-| Time | **O(2ⁿ)** worst case — exponential sentences |
-| Space | **O(n)** — recursion depth |`
+### Line 1: Function Signature
+    void wordBreak(string s, int start, set<string>& dict, vector<string>& cur, vector<string>& res)
+start = position in string, cur = words collected so far, res = all valid sentences.
+
+### Line 2-3: Base Case
+    if (start == s.size()) { res.push_back(join(cur)); return; }
+**WHY:** All characters consumed → cur contains a valid word sequence. Join and save!
+
+### Line 5: Try All Ending Positions
+    for (int end = start+1; end <= s.size(); end++)
+**WHY:** Try substrings of different lengths: s[start..start], s[start..start+1], etc.
+
+### Line 6-7: Check if Substring is a Word
+    string sub = s.substr(start, end-start);
+    if (!dict.count(sub)) continue;
+**WHY continue?** This substring isn't a dictionary word — skip it, try a longer one.
+
+### Line 8: Add the Word
+    cur.push_back(sub);
+**WHY:** Found a valid word! Add it to our current sentence being built.
+
+### Line 9: Recurse on Remaining String
+    wordBreak(s, end, dict, cur, res);
+**WHY end (not end+1)?** 'end' is exactly where the remaining unprocessed string starts.
+
+### Line 10: Backtrack
+    cur.pop_back();
+**WHY?** Remove the word we just added to try other possible words at this position.
+
+## Time & Space Complexity
+- **Time:** O(2ⁿ) worst case — exponential number of valid sentences
+- **Space:** O(n) recursion depth`
     }
 ];
 

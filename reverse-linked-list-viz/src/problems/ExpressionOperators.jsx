@@ -64,16 +64,12 @@ function gen(num, target) {
                 solve(i + 1, operand, cur + operand, `${expr}+${operand}`, myId);
                 // -
                 if (cnt < MAX) {
-                    cs.push(`ao(i=${idx})`);
                     push(12, "try", { op: "-", operand, expr: `"${expr}-${operand}"` }, `Try ${expr}-${operand}`);
-                    cs.pop();
                     solve(i + 1, -operand, cur - operand, `${expr}-${operand}`, myId);
                 }
                 // *
                 if (cnt < MAX) {
-                    cs.push(`ao(i=${idx})`);
                     push(12, "try", { op: "*", operand, expr: `"${expr}*${operand}"` }, `Try ${expr}*${operand}`);
-                    cs.pop();
                     solve(i + 1, prev * operand, cur - prev + prev * operand, `${expr}*${operand}`, myId);
                 }
             }
@@ -119,22 +115,46 @@ Result: ["1+2+3", "1*2*3"] ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### State: (index, expression, value, lastOperand)
-- value: current calculated value
-- lastOperand: needed to handle * correctly
+### Line 1: Function Signature
+    void addOp(string num, int idx, long prev, long cur, string expr, int target)
+- **idx:** current position in digit string
+- **cur:** current expression value
+- **prev:** last operand (needed for * fix)
 
-### Multiplication Fix
-For prev expression = X (+/-) last, now * next:
-    newValue = (value - last) + (last * next)
-**WHY:** Undo last +/- of 'last', then apply last*next.
+### Line 2: Base Case
+    if (idx == num.size()) { if (cur == target) result.push(expr); return; }
+**WHY:** Used all digits. If current value equals target → valid expression!
 
-### No Leading Zeros
-Skip multi-digit numbers starting with '0' ("05" invalid).
+### Line 3-4: Extract Next Number
+    for (int i = idx; i < num.size(); i++) {
+        long operand = stol(num.substr(idx, i - idx + 1));
+**WHY loop?** Try all possible next numbers: single digit, two digits, etc. "123" → try "1", "12", "123".
+
+### Line 5: No Leading Zeros
+    if (i > idx && num[idx] == '0') break;
+**WHY:** "05" is not a valid number. Only "0" alone is allowed.
+
+### Line 6: Addition
+    addOp(num, i+1, operand, cur + operand, expr + "+" + str);
+**WHY prev=operand?** The operand we just added becomes the "last operand" for potential future * corrections.
+
+### Line 7: Subtraction
+    addOp(num, i+1, -operand, cur - operand, expr + "-" + str);
+**WHY prev=−operand?** We treat subtraction as adding a negative, so prev is negative for * fix.
+
+### Line 8: Multiplication (The Tricky One!)
+    addOp(num, i+1, prev * operand, cur - prev + prev * operand, expr + "*" + str);
+**WHY cur − prev + prev * operand?** Multiplication has higher precedence! We must:
+1. **Undo** the last operation (subtract prev from cur)
+2. **Redo** it with multiplication (add prev × operand)
+
+Example: "2+3*4" → cur was 5 (2+3), prev was 3
+→ new cur = 5 − 3 + 3×4 = 5 − 3 + 12 = **14** ✓
 
 ## Time & Space Complexity
-- **Time:** O(4^n) — 3 operators + variable digit grouping
+- **Time:** O(4ⁿ) — 3 operators + variable-length numbers
 - **Space:** O(n) recursion depth`
     },
 ];

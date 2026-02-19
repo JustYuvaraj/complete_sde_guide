@@ -49,7 +49,7 @@ function gen(n) {
             push(6, "addOpen", { open, close, cur: `"${cur}"` }, `Add '(' → "${cur}"`);
             solve(open + 1, close, myId);
             cur = cur.slice(0, -1);
-            if (cnt < MAX) { cs.push(`g(o=${open},c=${close})`); push(8, "back", { cur: `"${cur}"` }, `Remove '(' ← "${cur}"`); cs.pop(); }
+            if (cnt < MAX) { push(8, "back", { cur: `"${cur}"` }, `Remove '(' ← "${cur}"`); }
         }
 
         if (close < open) {
@@ -57,7 +57,7 @@ function gen(n) {
             push(11, "addClose", { open, close, cur: `"${cur}"` }, `Add ')' → "${cur}"`);
             solve(open, close + 1, myId);
             cur = cur.slice(0, -1);
-            if (cnt < MAX) { cs.push(`g(o=${open},c=${close})`); push(13, "back", { cur: `"${cur}"` }, `Remove ')' ← "${cur}"`); cs.pop(); }
+            if (cnt < MAX) { push(13, "back", { cur: `"${cur}"` }, `Remove ')' ← "${cur}"`); }
         }
 
         treeNodes.find(t => t.id === `n${myId}`).status = "done";

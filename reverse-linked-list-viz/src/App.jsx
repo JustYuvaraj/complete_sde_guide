@@ -64,6 +64,47 @@ import PacificAtlantic from "./problems/PacificAtlantic";
 import MaxAreaIsland from "./problems/MaxAreaIsland";
 import RottingOranges from "./problems/RottingOranges";
 
+// ── Array Visualizations ──
+import SecondLargest from "./problems/SecondLargest";
+import CheckSorted from "./problems/CheckSorted";
+import RemoveDuplicates from "./problems/RemoveDuplicates";
+import LeftRotateOne from "./problems/LeftRotateOne";
+import LeftRotateK from "./problems/LeftRotateK";
+import MoveZeros from "./problems/MoveZeros";
+import LinearSearchViz from "./problems/LinearSearchViz";
+import UnionSortedArrays from "./problems/UnionSortedArrays";
+import MissingNumber from "./problems/MissingNumber";
+import MaxConsecutiveOnes from "./problems/MaxConsecutiveOnes";
+import SingleNumber from "./problems/SingleNumber";
+import LongestSubarraySumK from "./problems/LongestSubarraySumK";
+import LongestSubarraySumKGen from "./problems/LongestSubarraySumKGen";
+import TwoSum from "./problems/TwoSum";
+import DutchNationalFlag from "./problems/DutchNationalFlag";
+import MajorityElement from "./problems/MajorityElement";
+import KadanesAlgorithm from "./problems/KadanesAlgorithm";
+import PrintMaxSubarray from "./problems/PrintMaxSubarray";
+import StockBuySell from "./problems/StockBuySell";
+import RearrangeBySign from "./problems/RearrangeBySign";
+import NextPermutationArr from "./problems/NextPermutationArr";
+import LeadersInArray from "./problems/LeadersInArray";
+import LongestConsecutiveSeq from "./problems/LongestConsecutiveSeq";
+import SetMatrixZeroes from "./problems/SetMatrixZeroes";
+import RotateMatrix from "./problems/RotateMatrix";
+import SpiralMatrix from "./problems/SpiralMatrix";
+import CountSubarraysSum from "./problems/CountSubarraysSum";
+import PascalsTriangle from "./problems/PascalsTriangle";
+import MajorityElementII from "./problems/MajorityElementII";
+import ThreeSum from "./problems/ThreeSum";
+import FourSum from "./problems/FourSum";
+import LargestSubarraySum0 from "./problems/LargestSubarraySum0";
+import CountSubarraysXOR from "./problems/CountSubarraysXOR";
+import MergeIntervals from "./problems/MergeIntervals";
+import MergeSortedNoSpace from "./problems/MergeSortedNoSpace";
+import RepeatingMissing from "./problems/RepeatingMissing";
+import CountInversionsArr from "./problems/CountInversionsArr";
+import ReversePairs from "./problems/ReversePairs";
+import MaxProductSubarray from "./problems/MaxProductSubarray";
+
 const PATTERNS = [
   {
     name: "Simple Recursion",
@@ -196,19 +237,19 @@ const PATTERNS = [
     bg: "#083344",
     bgLight: "#cffafe",
     problems: [
-      { id: 101, name: "Second Largest Element", lc: "—", diff: "🟢" },
-      { id: 102, name: "Check if Array is Sorted", lc: "—", diff: "🟢" },
-      { id: 103, name: "Remove Duplicates from Sorted Array", lc: "26", diff: "🟢" },
-      { id: 104, name: "Left Rotate Array by One", lc: "—", diff: "🟢" },
-      { id: 105, name: "Left Rotate Array by K Places", lc: "189", diff: "🟢" },
-      { id: 106, name: "Move Zeros to End", lc: "283", diff: "🟢" },
-      { id: 107, name: "Linear Search", lc: "—", diff: "🟢" },
-      { id: 108, name: "Union of Two Sorted Arrays", lc: "—", diff: "🟢" },
-      { id: 109, name: "Find Missing Number", lc: "268", diff: "🟢" },
-      { id: 110, name: "Maximum Consecutive Ones", lc: "485", diff: "🟢" },
-      { id: 111, name: "Single Number", lc: "136", diff: "🟡" },
-      { id: 112, name: "Longest Subarray with Sum K (Positives)", lc: "—", diff: "🟡" },
-      { id: 113, name: "Longest Subarray with Sum K", lc: "—", diff: "🟡" },
+      { id: 101, name: "Second Largest Element", lc: "—", diff: "🟢", component: "SecondLargest" },
+      { id: 102, name: "Check if Array is Sorted", lc: "—", diff: "🟢", component: "CheckSorted" },
+      { id: 103, name: "Remove Duplicates from Sorted Array", lc: "26", diff: "🟢", component: "RemoveDuplicates" },
+      { id: 104, name: "Left Rotate Array by One", lc: "—", diff: "🟢", component: "LeftRotateOne" },
+      { id: 105, name: "Left Rotate Array by K Places", lc: "189", diff: "🟢", component: "LeftRotateK" },
+      { id: 106, name: "Move Zeros to End", lc: "283", diff: "🟢", component: "MoveZeros" },
+      { id: 107, name: "Linear Search", lc: "—", diff: "🟢", component: "LinearSearchViz" },
+      { id: 108, name: "Union of Two Sorted Arrays", lc: "—", diff: "🟢", component: "UnionSortedArrays" },
+      { id: 109, name: "Find Missing Number", lc: "268", diff: "🟢", component: "MissingNumber" },
+      { id: 110, name: "Maximum Consecutive Ones", lc: "485", diff: "🟢", component: "MaxConsecutiveOnes" },
+      { id: 111, name: "Single Number", lc: "136", diff: "🟡", component: "SingleNumber" },
+      { id: 112, name: "Longest Subarray with Sum K (Positives)", lc: "—", diff: "🟡", component: "LongestSubarraySumK" },
+      { id: 113, name: "Longest Subarray with Sum K", lc: "—", diff: "🟡", component: "LongestSubarraySumKGen" },
     ],
   },
   {
@@ -219,20 +260,20 @@ const PATTERNS = [
     bg: "#2e1065",
     bgLight: "#ede9fe",
     problems: [
-      { id: 114, name: "Two Sum", lc: "1", diff: "🟢" },
-      { id: 115, name: "Sort 0s 1s 2s (Dutch National Flag)", lc: "75", diff: "🟡" },
-      { id: 116, name: "Majority Element", lc: "169", diff: "🟢" },
-      { id: 117, name: "Kadane's Algorithm (Max Subarray Sum)", lc: "53", diff: "🟡" },
-      { id: 118, name: "Print Max Subarray", lc: "53", diff: "🟡" },
-      { id: 119, name: "Stock Buy and Sell", lc: "121", diff: "🟡" },
-      { id: 120, name: "Rearrange Array by Sign", lc: "2149", diff: "🟡" },
-      { id: 121, name: "Next Permutation", lc: "31", diff: "🟡" },
-      { id: 122, name: "Leaders in an Array", lc: "—", diff: "🟡" },
-      { id: 123, name: "Longest Consecutive Sequence", lc: "128", diff: "🟡" },
-      { id: 124, name: "Set Matrix Zeroes", lc: "73", diff: "🟡" },
-      { id: 125, name: "Rotate Matrix by 90°", lc: "48", diff: "🟡" },
-      { id: 126, name: "Spiral Matrix", lc: "54", diff: "🟡" },
-      { id: 127, name: "Count Subarrays with Given Sum", lc: "560", diff: "🟡" },
+      { id: 114, name: "Two Sum", lc: "1", diff: "🟢", component: "TwoSum" },
+      { id: 115, name: "Sort 0s 1s 2s (Dutch National Flag)", lc: "75", diff: "🟡", component: "DutchNationalFlag" },
+      { id: 116, name: "Majority Element", lc: "169", diff: "🟢", component: "MajorityElement" },
+      { id: 117, name: "Kadane's Algorithm (Max Subarray Sum)", lc: "53", diff: "🟡", component: "KadanesAlgorithm" },
+      { id: 118, name: "Print Max Subarray", lc: "53", diff: "🟡", component: "PrintMaxSubarray" },
+      { id: 119, name: "Stock Buy and Sell", lc: "121", diff: "🟡", component: "StockBuySell" },
+      { id: 120, name: "Rearrange Array by Sign", lc: "2149", diff: "🟡", component: "RearrangeBySign" },
+      { id: 121, name: "Next Permutation", lc: "31", diff: "🟡", component: "NextPermutationArr" },
+      { id: 122, name: "Leaders in an Array", lc: "—", diff: "🟡", component: "LeadersInArray" },
+      { id: 123, name: "Longest Consecutive Sequence", lc: "128", diff: "🟡", component: "LongestConsecutiveSeq" },
+      { id: 124, name: "Set Matrix Zeroes", lc: "73", diff: "🟡", component: "SetMatrixZeroes" },
+      { id: 125, name: "Rotate Matrix by 90°", lc: "48", diff: "🟡", component: "RotateMatrix" },
+      { id: 126, name: "Spiral Matrix", lc: "54", diff: "🟡", component: "SpiralMatrix" },
+      { id: 127, name: "Count Subarrays with Given Sum", lc: "560", diff: "🟡", component: "CountSubarraysSum" },
     ],
   },
   {
@@ -243,18 +284,18 @@ const PATTERNS = [
     bg: "#4c0519",
     bgLight: "#ffe4e6",
     problems: [
-      { id: 128, name: "Pascal's Triangle", lc: "118", diff: "🟢" },
-      { id: 129, name: "Majority Element II", lc: "229", diff: "🔴" },
-      { id: 130, name: "3 Sum", lc: "15", diff: "🟡" },
-      { id: 131, name: "4 Sum", lc: "18", diff: "🟡" },
-      { id: 132, name: "Largest Subarray with Sum 0", lc: "—", diff: "🟡" },
-      { id: 133, name: "Count Subarrays with XOR K", lc: "—", diff: "🔴" },
-      { id: 134, name: "Merge Overlapping Intervals", lc: "56", diff: "🟡" },
-      { id: 135, name: "Merge Sorted Arrays (No Extra Space)", lc: "88", diff: "🟡" },
-      { id: 136, name: "Repeating and Missing Number", lc: "—", diff: "🔴" },
-      { id: 137, name: "Count Inversions", lc: "—", diff: "🔴" },
-      { id: 138, name: "Reverse Pairs", lc: "493", diff: "🔴" },
-      { id: 139, name: "Maximum Product Subarray", lc: "152", diff: "🔴" },
+      { id: 128, name: "Pascal's Triangle", lc: "118", diff: "🟢", component: "PascalsTriangle" },
+      { id: 129, name: "Majority Element II", lc: "229", diff: "🔴", component: "MajorityElementII" },
+      { id: 130, name: "3 Sum", lc: "15", diff: "🟡", component: "ThreeSum" },
+      { id: 131, name: "4 Sum", lc: "18", diff: "🟡", component: "FourSum" },
+      { id: 132, name: "Largest Subarray with Sum 0", lc: "—", diff: "🟡", component: "LargestSubarraySum0" },
+      { id: 133, name: "Count Subarrays with XOR K", lc: "—", diff: "🔴", component: "CountSubarraysXOR" },
+      { id: 134, name: "Merge Overlapping Intervals", lc: "56", diff: "🟡", component: "MergeIntervals" },
+      { id: 135, name: "Merge Sorted Arrays (No Extra Space)", lc: "88", diff: "🟡", component: "MergeSortedNoSpace" },
+      { id: 136, name: "Repeating and Missing Number", lc: "—", diff: "🔴", component: "RepeatingMissing" },
+      { id: 137, name: "Count Inversions", lc: "—", diff: "🔴", component: "CountInversionsArr" },
+      { id: 138, name: "Reverse Pairs", lc: "493", diff: "🔴", component: "ReversePairs" },
+      { id: 139, name: "Maximum Product Subarray", lc: "152", diff: "🔴", component: "MaxProductSubarray" },
     ],
   },
 
@@ -514,6 +555,49 @@ const COMPONENTS = {
   PacificAtlantic,
   MaxAreaIsland,
   RottingOranges,
+
+  // Arrays — Easy
+  SecondLargest,
+  CheckSorted,
+  RemoveDuplicates,
+  LeftRotateOne,
+  LeftRotateK,
+  MoveZeros,
+  LinearSearchViz,
+  UnionSortedArrays,
+  MissingNumber,
+  MaxConsecutiveOnes,
+  SingleNumber,
+  LongestSubarraySumK,
+  LongestSubarraySumKGen,
+  // Arrays — Medium
+  TwoSum,
+  DutchNationalFlag,
+  MajorityElement,
+  KadanesAlgorithm,
+  PrintMaxSubarray,
+  StockBuySell,
+  RearrangeBySign,
+  NextPermutationArr,
+  LeadersInArray,
+  LongestConsecutiveSeq,
+  SetMatrixZeroes,
+  RotateMatrix,
+  SpiralMatrix,
+  CountSubarraysSum,
+  // Arrays — Hard
+  PascalsTriangle,
+  MajorityElementII,
+  ThreeSum,
+  FourSum,
+  LargestSubarraySum0,
+  CountSubarraysXOR,
+  MergeIntervals,
+  MergeSortedNoSpace,
+  RepeatingMissing,
+  CountInversionsArr,
+  ReversePairs,
+  MaxProductSubarray,
 };
 
 const CATEGORIES = [

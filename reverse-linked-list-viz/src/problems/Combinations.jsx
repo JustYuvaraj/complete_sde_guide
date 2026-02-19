@@ -39,9 +39,7 @@ function gen(n, k) {
             push(6, "pick", { i, cur: `[${cur}]` }, `Pick ${i}`);
             solve(i + 1, myId);
             cur.pop();
-            cs.push(`C(s=${start})`);
             push(8, "back", { i, cur: `[${cur}]` }, `Backtrack: rm ${i}`);
-            cs.pop();
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();

@@ -119,25 +119,39 @@ Find if a word exists in a 2D grid. Letters must be adjacent (up/down/left/right
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### Base Case
+### Line 1: Function Signature
+    bool dfs(board, r, c, word, idx)
+r,c = current cell, idx = which character in 'word' we're trying to match.
+
+### Line 2: Success Base Case
     if (idx == word.size()) return true;
-**WHY:** All letters matched → word found!
+**WHY:** All characters matched! The word exists on the board.
 
-### Boundary + Match Check
+### Line 3: Boundary + Character Check
     if (r<0 || r>=m || c<0 || c>=n || board[r][c] != word[idx]) return false;
+**WHY:** Out of bounds OR current cell doesn't match the expected character → dead end.
 
-### Visited Marking
+### Line 4: Mark as Visited (The Trick!)
     char tmp = board[r][c];
-    board[r][c] = '#';  // mark visited
-    bool found = dfs(4 directions);
-    board[r][c] = tmp;  // restore
-**WHY modify board?** No extra visited array needed.
+    board[r][c] = '#';
+**WHY modify the board directly?** Instead of maintaining a separate "visited" array, we temporarily replace the character with '#'. This prevents revisiting the same cell in the current path. Saves O(m×n) space!
+
+### Line 5: Explore 4 Directions
+    bool found = dfs(r-1,c) || dfs(r+1,c) || dfs(r,c-1) || dfs(r,c+1);
+**WHY ||?** We only need ONE direction to succeed. Short-circuits — if up works, don't try others.
+
+### Line 6: Restore Cell (Backtrack)
+    board[r][c] = tmp;
+**WHY restore?** This cell might be needed for a different path later. Must undo our '#' mark.
+
+### Line 7: Return Result
+    return found;
 
 ## Time & Space Complexity
-- **Time:** O(m × n × 4^L) where L = word length
-- **Space:** O(L) recursion depth`
+- **Time:** O(m × n × 4^L) where L = word length — 4 directions at each step
+- **Space:** O(L) recursion depth only — no visited array needed!`
     },
 ];
 

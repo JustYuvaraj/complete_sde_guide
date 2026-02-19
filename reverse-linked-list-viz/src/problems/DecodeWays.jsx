@@ -95,23 +95,37 @@ The 3 decodings: B-B-F, B-Z, V-F ✅`
     },
     {
         icon: "💻", title: "Code Logic", color: "#10b981",
-        content: `## Key Points
+        content: `## Line-by-Line Breakdown
 
-### 1-digit decode
-    if (s[i] != '0') dp[i] += dp[i-1]
-**WHY check Ⅰ0?** '0' alone can't be decoded.
+### Line 3-4: Initialize Base
+    dp[0] = 1;  // empty prefix = 1 way
+    dp[1] = s[0] != '0' ? 1 : 0;
+**WHY dp[0]=1?** The empty string has exactly one "decoding" (take nothing). This seeds the DP.
+**WHY check s[0]?** If first char is '0', there's NO valid decoding starting here.
 
-### 2-digit decode
-    if (s[i-1] == '1' || (s[i-1] == '2' && s[i] <= '6'))
-        dp[i] += dp[i-2]
-**WHY 10-26?** Only valid letter codes.
+### Line 5: Main Loop
+    for (int i = 2; i <= n; i++)
+**WHY start at 2?** We need at least 2 characters to try a 2-digit decode. dp[0] and dp[1] are already set.
 
-### Edge Case
-"0" at start = 0 ways. "10" = 1 way (J only).
+### Line 6-8: 1-Digit Decode
+    int one = stoi(s.substr(i-1, 1));
+    if (one >= 1) dp[i] += dp[i-1];
+**WHY one >= 1?** Single digit must be 1-9 (maps to A-I). '0' alone has no letter mapping.
+**WHY dp[i-1]?** If this 1-digit is valid, all decodings of the prefix s[0..i-2] extend to here.
+
+### Line 7-9: 2-Digit Decode
+    int two = stoi(s.substr(i-2, 2));
+    if (two >= 10 && two <= 26) dp[i] += dp[i-2];
+**WHY 10-26?** Only codes 10-26 map to letters J-Z. Below 10 has a leading zero (invalid). Above 26 has no letter.
+**WHY dp[i-2]?** If this 2-digit group is valid, all decodings of the prefix s[0..i-3] extend to here.
+
+### Line 11: Answer
+    return dp[n];
+Total number of ways to decode the entire string.
 
 ## Time & Space Complexity
-- **Time:** O(n) single pass
-- **Space:** O(1) with two variables`
+- **Time:** O(n) — single pass through the string
+- **Space:** O(n) for dp array, O(1) with two variables`
     },
 ];
 

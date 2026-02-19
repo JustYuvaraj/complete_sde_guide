@@ -39,9 +39,7 @@ function gen(nums) {
             push(6, "swap", { i, start, "swap": `${arr[i]}↔${arr[start]}`, arr: `[${arr}]` }, `swap(${start},${i})`);
             solve(start + 1, myId);
             [arr[start], arr[i]] = [arr[i], arr[start]];
-            cs.push(`p(s=${start})`);
             push(8, "back", { i, arr: `[${arr}]` }, `unswap(${start},${i})`);
-            cs.pop();
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();

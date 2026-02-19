@@ -52,7 +52,7 @@ function gen(n) {
             snap(8, "place", { pos, num, "check": `${num}%${pos}=${num % pos} or ${pos}%${num}=${pos % num}` }, `Place ${num} at pos ${pos} ✓`);
             count += solve(pos + 1, myId);
             used[num] = false; arr[pos] = 0;
-            if (cnt < MAX) { cs.push(`ba(p=${pos})`); snap(10, "remove", { pos, num }, `Remove ${num} from pos ${pos}`); cs.pop(); }
+            if (cnt < MAX) { snap(10, "remove", { pos, num }, `Remove ${num} from pos ${pos}`); }
         }
         treeNodes.find(t => t.id === `n${myId}`).status = "done";
         cs.pop();
