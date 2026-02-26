@@ -1,7 +1,8 @@
 {
-  "name": "reverse-linked-list-viz",
+  "name": "dsa-visualizer",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Interactive DSA Visualizer — step through algorithms visually with code, call stacks, and data structure animations",
   "type": "module",
   "scripts": {
     "dev": "vite",

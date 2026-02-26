@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "./ThemeContext";
 
 /* ━━━ Code Panel ━━━ */
@@ -464,6 +464,557 @@ export function ExplainPanel({ sections = [] }) {
         </div>
     );
 }
+
+/* ━━━ Code Editor Panel (polished, with inline controls) ━━━ */
+export function CodeEditorPanel({
+    code, step, phaseLabels, phaseColors,
+    fileName, idx, setIdx, steps, playing, setPlaying,
+}) {
+    const { theme, isDark } = useTheme();
+    const pc = (phaseColors && phaseColors[step.phase]) || "#6366f1";
+    const phaseLabel = (phaseLabels && phaseLabels[step.phase]) || step.phase;
+
+    return (
+        <div style={{
+            flex: "1 1 340px", background: theme.cardBg,
+            border: `1px solid ${theme.cardBorder}`, borderRadius: "12px", overflow: "hidden",
+        }}>
+            {/* Header: file + controls */}
+            <div style={{
+                background: theme.cardHeaderBg, padding: "5px 12px",
+                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "0.63rem", color: theme.textMuted }}>{fileName}</span>
+                    <span style={{
+                        fontSize: "0.5rem", padding: "1px 6px", borderRadius: "4px",
+                        background: `${pc}20`, border: `1px solid ${pc}40`,
+                        color: pc, fontWeight: "700",
+                    }}>{phaseLabel}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                    <span style={{
+                        fontSize: "0.55rem", color: theme.textDim, marginRight: "6px",
+                        fontFamily: "monospace", fontWeight: "600",
+                    }}>
+                        {idx + 1}<span style={{ opacity: 0.4 }}>/</span>{steps.length}
+                    </span>
+                    {[
+                        { label: "⟲", tip: "Reset", act: () => { setIdx(0); setPlaying(false); } },
+                        { label: "‹", tip: "Prev Step", act: () => { setIdx(Math.max(0, idx - 1)); setPlaying(false); } },
+                        { label: playing ? "⏸" : "▶", tip: playing ? "Pause" : "Auto Play", act: () => setPlaying(!playing), accent: true },
+                        { label: "›", tip: "Next Step", act: () => { setIdx(Math.min(steps.length - 1, idx + 1)); setPlaying(false); } },
+                    ].map((b, i) => (
+                        <button key={i} onClick={b.act} title={b.tip} style={{
+                            width: b.accent ? "28px" : "22px", height: "22px",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: b.accent ? pc : (isDark ? "#ffffff0a" : "#00000006"),
+                            color: b.accent ? "#fff" : theme.textDim,
+                            border: `1px solid ${b.accent ? pc : theme.cardBorder}`,
+                            borderRadius: "6px", cursor: "pointer",
+                            fontSize: b.accent ? "0.6rem" : "0.8rem",
+                            fontWeight: "800", transition: "all 0.15s",
+                        }}
+                            onMouseOver={e => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                            onMouseOut={e => { e.currentTarget.style.transform = "scale(1)"; }}
+                        >{b.label}</button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Code lines */}
+            <div style={{ padding: "4px 0" }}>
+                {code.map(line => {
+                    const active = line.id === step.cl;
+                    return (
+                        <div key={line.id} style={{
+                            display: "flex", alignItems: "center", padding: "1.5px 0",
+                            background: active ? theme.lineHighlightBg : "transparent",
+                            borderLeft: `3px solid ${active ? pc : "transparent"}`,
+                            transition: "background 0.3s",
+                        }}>
+                            <span style={{
+                                width: "24px", textAlign: "right", color: theme.textDim,
+                                fontSize: "0.6rem", paddingRight: "8px", flexShrink: 0,
+                            }}>{line.id + 1}</span>
+                            <span style={{
+                                fontSize: "0.7rem", whiteSpace: "pre",
+                                color: active ? theme.textCodeActive : line.text === "" ? "transparent" : theme.textCode,
+                                fontWeight: active ? "700" : "400",
+                                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                            }}>{line.text || " "}</span>
+                            {active && (
+                                <span style={{
+                                    marginLeft: "auto", marginRight: "10px",
+                                    fontSize: "0.5rem",
+                                    background: `${pc}25`, color: pc,
+                                    padding: "1px 6px", borderRadius: "4px",
+                                    fontWeight: "700", border: `1px solid ${pc}44`,
+                                }}>executing</span>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Status bar */}
+            <div style={{
+                padding: "6px 12px", fontSize: "0.68rem", fontWeight: "500",
+                borderTop: `1px solid ${theme.cardHeaderBorder}`,
+                background: `${pc}06`, color: theme.text,
+                display: "flex", alignItems: "center", gap: "6px",
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+            }}>
+                <span style={{ color: pc, fontWeight: "700" }}>▸</span>
+                {step.msg}
+            </div>
+        </div>
+    );
+}
+
+/* ━━━ Progress Bar ━━━ */
+export function ProgressBar({ idx, total, accentColor, gradientStart = "#3b82f6" }) {
+    const { isDark } = useTheme();
+    return (
+        <div style={{
+            width: "100%", maxWidth: "920px", height: "4px",
+            background: isDark ? "#1e293b" : "#e2e8f0",
+            borderRadius: "2px", overflow: "hidden",
+        }}>
+            <div style={{
+                height: "100%", borderRadius: "2px",
+                width: `${((idx + 1) / total) * 100}%`,
+                background: `linear-gradient(90deg, ${gradientStart}, ${accentColor || gradientStart})`,
+                transition: "width 0.4s ease",
+            }} />
+        </div>
+    );
+}
+
+/* ━━━ Dual Input Section (two+ labeled inputs with Run/Default) ━━━ */
+export function DualInputSection({ inputs = [], onRun, onReset }) {
+    const { theme, isDark } = useTheme();
+    return (
+        <div style={{
+            display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap",
+            width: "100%", maxWidth: "920px",
+        }}>
+            {inputs.map((inp, i) => (
+                <span key={i} style={{ display: "contents" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: "700", color: theme.textDim }}>{inp.label}</span>
+                    <input
+                        value={inp.value}
+                        onChange={e => inp.onChange(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && onRun()}
+                        placeholder={inp.placeholder}
+                        style={{
+                            flex: inp.flex || "1 1 120px", padding: "6px 12px", borderRadius: "8px",
+                            background: isDark ? "#1e293b" : "#f1f5f9",
+                            border: `1px solid ${theme.cardBorder}`, color: theme.text,
+                            fontSize: "0.8rem", fontFamily: "monospace",
+                            ...(inp.style || {}),
+                        }}
+                    />
+                </span>
+            ))}
+            <button onClick={onRun} style={{
+                padding: "6px 16px", borderRadius: "8px",
+                background: "#6366f1", color: "#fff", border: "none",
+                cursor: "pointer", fontWeight: "700", fontSize: "0.75rem",
+            }}>▶ Run</button>
+            <button onClick={onReset} style={{
+                padding: "6px 12px", borderRadius: "8px",
+                background: isDark ? "#1e293b" : "#f1f5f9",
+                color: theme.text, border: `1px solid ${theme.cardBorder}`,
+                cursor: "pointer", fontWeight: "600", fontSize: "0.75rem",
+            }}>↺ Default</button>
+        </div>
+    );
+}
+
+/* ━━━ Hash Map Panel (bucket-style visualization) ━━━
+ * entries: object { key: value, ... }  e.g. { "2": 0, "7": 1 }
+ * activeKey: key being currently inserted/searched
+ * highlightKey: key that was found/matched
+ * status: "inserting" | "found" | "searching" | null
+ * title: custom title string
+ * bucketCount: number of buckets to display (default 7)
+ */
+export function HashMapPanel({
+    entries = {}, activeKey, highlightKey, status,
+    title, bucketCount = 7,
+}) {
+    const { theme, isDark } = useTheme();
+    const keys = Object.keys(entries);
+
+    /* Build bucket structure */
+    const buckets = Array.from({ length: bucketCount }, () => []);
+    keys.forEach(key => {
+        const numKey = parseInt(key);
+        const bucket = ((numKey % bucketCount) + bucketCount) % bucketCount;
+        buckets[bucket].push({ key, value: entries[key] });
+    });
+
+    const statusColors = {
+        inserting: "#3b82f6",
+        found: "#10b981",
+        searching: "#f59e0b",
+    };
+    const sc = statusColors[status] || "#6366f1";
+
+    return (
+        <div style={{
+            width: "100%", maxWidth: "920px",
+            background: theme.cardBg,
+            border: `1px solid ${theme.cardBorder}`,
+            borderRadius: "12px", overflow: "hidden",
+        }}>
+            {/* Header */}
+            <div style={{
+                padding: "8px 14px",
+                background: theme.cardHeaderBg,
+                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "0.8rem" }}>🗂️</span>
+                    <span style={{
+                        fontSize: "0.7rem", fontWeight: "800",
+                        color: theme.text, fontFamily: "monospace",
+                        textTransform: "uppercase", letterSpacing: "0.5px",
+                    }}>{title || "Hash Map"}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{
+                        fontSize: "0.55rem", fontWeight: "700", color: theme.textDim,
+                        fontFamily: "monospace",
+                    }}>{keys.length} entries · {bucketCount} buckets</span>
+                    {status && (
+                        <span style={{
+                            fontSize: "0.5rem", padding: "1px 8px", borderRadius: "4px",
+                            background: `${sc}20`, border: `1px solid ${sc}40`,
+                            color: sc, fontWeight: "700", textTransform: "uppercase",
+                        }}>{status === "inserting" ? "INSERT" : status === "found" ? "FOUND" : "LOOKUP"}</span>
+                    )}
+                </div>
+            </div>
+
+            {/* Hash function indicator */}
+            {activeKey != null && status === "inserting" && (
+                <div style={{
+                    padding: "4px 14px", fontSize: "0.6rem",
+                    fontFamily: "'JetBrains Mono', monospace", fontWeight: "600",
+                    color: sc,
+                    background: `${sc}06`,
+                    borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                    display: "flex", alignItems: "center", gap: "6px",
+                }}>
+                    <span style={{ opacity: 0.7 }}>hash(</span>
+                    <span style={{ fontWeight: "900" }}>{activeKey}</span>
+                    <span style={{ opacity: 0.7 }}>) % {bucketCount} = </span>
+                    <span style={{
+                        fontWeight: "900",
+                        background: `${sc}20`, padding: "0 4px", borderRadius: "3px",
+                    }}>{((parseInt(activeKey) % bucketCount) + bucketCount) % bucketCount}</span>
+                </div>
+            )}
+
+            {/* Bucket rows */}
+            <div style={{ padding: "6px 0" }}>
+                {buckets.map((bucket, bi) => {
+                    const hasActive = bucket.some(e => String(e.key) === String(activeKey));
+                    const hasHighlight = bucket.some(e => String(e.key) === String(highlightKey));
+                    const isEmpty = bucket.length === 0;
+
+                    return (
+                        <div key={bi} style={{
+                            display: "flex", alignItems: "center",
+                            padding: "3px 14px", minHeight: "32px",
+                            background: hasActive ? `${sc}06` : hasHighlight ? "#10b98106" : "transparent",
+                            borderLeft: `3px solid ${hasActive ? sc : hasHighlight ? "#10b981" : "transparent"}`,
+                            transition: "all 0.3s",
+                        }}>
+                            {/* Bucket number */}
+                            <span style={{
+                                width: "32px", flexShrink: 0,
+                                fontSize: "0.55rem", fontWeight: "700",
+                                fontFamily: "monospace",
+                                color: hasActive ? sc : hasHighlight ? "#10b981" : theme.textDim,
+                                opacity: isEmpty ? 0.3 : 1,
+                            }}>#{bi}</span>
+
+                            {/* Entries in this bucket */}
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap", flex: 1,
+                            }}>
+                                {isEmpty ? (
+                                    <span style={{
+                                        fontSize: "0.5rem", color: theme.textDim, opacity: 0.25,
+                                        fontFamily: "monospace",
+                                    }}>—</span>
+                                ) : (
+                                    bucket.map((entry, ei) => {
+                                        const isActive = String(entry.key) === String(activeKey);
+                                        const isFound = String(entry.key) === String(highlightKey);
+                                        const eColor = isFound ? "#10b981" : isActive ? sc : theme.textDim;
+
+                                        return (
+                                            <React.Fragment key={ei}>
+                                                {/* Chain arrow */}
+                                                {ei > 0 && (
+                                                    <span style={{
+                                                        fontSize: "0.6rem", color: theme.textDim,
+                                                        fontWeight: "700", opacity: 0.5,
+                                                    }}>→</span>
+                                                )}
+                                                {/* Entry pill */}
+                                                <div style={{
+                                                    display: "flex", alignItems: "center", gap: "0",
+                                                    borderRadius: "8px", overflow: "hidden",
+                                                    border: `1.5px solid ${isActive || isFound ? eColor : theme.cardBorder}`,
+                                                    transition: "all 0.3s",
+                                                    transform: isActive || isFound ? "scale(1.08)" : "scale(1)",
+                                                    boxShadow: isActive ? `0 2px 12px ${sc}40`
+                                                        : isFound ? "0 2px 12px #10b98140" : "none",
+                                                }}>
+                                                    {/* Key cell */}
+                                                    <div style={{
+                                                        padding: "3px 8px",
+                                                        background: isActive ? `${sc}18`
+                                                            : isFound ? "#10b98118"
+                                                                : (isDark ? "#1e293b" : "#f1f5f9"),
+                                                        fontFamily: "'JetBrains Mono', monospace",
+                                                        fontSize: "0.72rem", fontWeight: "900",
+                                                        color: isFound ? "#10b981" : isActive ? sc : theme.text,
+                                                    }}>{entry.key}</div>
+                                                    {/* Arrow separator */}
+                                                    <div style={{
+                                                        padding: "3px 4px",
+                                                        background: isDark ? "#0f172a88" : "#e2e8f088",
+                                                        fontSize: "0.5rem", color: theme.textDim,
+                                                        fontWeight: "700",
+                                                    }}>→</div>
+                                                    {/* Value cell */}
+                                                    <div style={{
+                                                        padding: "3px 8px",
+                                                        background: isActive ? `${sc}10`
+                                                            : isFound ? "#10b98110"
+                                                                : (isDark ? "#0f172a" : "#f8fafc"),
+                                                        fontFamily: "'JetBrains Mono', monospace",
+                                                        fontSize: "0.68rem", fontWeight: "600",
+                                                        color: isFound ? "#10b981" : isActive ? sc : theme.textDim,
+                                                    }}>idx {entry.value}</div>
+                                                </div>
+
+                                                {/* Badge */}
+                                                {isActive && status === "inserting" && (
+                                                    <span style={{
+                                                        fontSize: "0.45rem", fontWeight: "800",
+                                                        padding: "1px 5px", borderRadius: "4px",
+                                                        background: sc, color: "#fff",
+                                                        animation: "fadeIn 0.3s ease",
+                                                    }}>NEW</span>
+                                                )}
+                                                {isFound && (
+                                                    <span style={{
+                                                        fontSize: "0.45rem", fontWeight: "800",
+                                                        padding: "1px 5px", borderRadius: "4px",
+                                                        background: "#10b981", color: "#fff",
+                                                    }}>MATCH</span>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+
+/* ━━━ Hash Set Panel (bucket-style visualization) ━━━
+ * values: array of values in the set, e.g. [1, 2, 3]
+ * activeValue: value being currently inserted/searched
+ * highlightValue: value that was found/matched
+ * status: "inserting" | "found" | "searching" | null
+ * title: custom title string
+ * bucketCount: number of buckets to display (default 7)
+ */
+export function HashSetPanel({
+    values = [], activeValue, highlightValue, status,
+    title, bucketCount = 7,
+}) {
+    const { theme, isDark } = useTheme();
+
+    /* Build bucket structure */
+    const buckets = Array.from({ length: bucketCount }, () => []);
+    values.forEach(val => {
+        const bucket = ((val % bucketCount) + bucketCount) % bucketCount;
+        buckets[bucket].push(val);
+    });
+
+    const statusColors = {
+        inserting: "#3b82f6",
+        found: "#ef4444",
+        searching: "#f59e0b",
+    };
+    const sc = statusColors[status] || "#6366f1";
+
+    return (
+        <div style={{
+            width: "100%", maxWidth: "920px",
+            background: theme.cardBg,
+            border: `1px solid ${theme.cardBorder}`,
+            borderRadius: "12px", overflow: "hidden",
+        }}>
+            {/* Header */}
+            <div style={{
+                padding: "8px 14px",
+                background: theme.cardHeaderBg,
+                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "0.8rem" }}>🗃️</span>
+                    <span style={{
+                        fontSize: "0.7rem", fontWeight: "800",
+                        color: theme.text, fontFamily: "monospace",
+                        textTransform: "uppercase", letterSpacing: "0.5px",
+                    }}>{title || "Hash Set"}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{
+                        fontSize: "0.55rem", fontWeight: "700", color: theme.textDim,
+                        fontFamily: "monospace",
+                    }}>{values.length} elements · {bucketCount} buckets</span>
+                    {status && (
+                        <span style={{
+                            fontSize: "0.5rem", padding: "1px 8px", borderRadius: "4px",
+                            background: `${sc}20`, border: `1px solid ${sc}40`,
+                            color: sc, fontWeight: "700", textTransform: "uppercase",
+                        }}>{status === "inserting" ? "INSERT" : status === "found" ? "FOUND!" : "LOOKUP"}</span>
+                    )}
+                </div>
+            </div>
+
+            {/* Hash function indicator */}
+            {activeValue != null && status === "inserting" && (
+                <div style={{
+                    padding: "4px 14px", fontSize: "0.6rem",
+                    fontFamily: "'JetBrains Mono', monospace", fontWeight: "600",
+                    color: sc,
+                    background: `${sc}06`,
+                    borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                    display: "flex", alignItems: "center", gap: "6px",
+                }}>
+                    <span style={{ opacity: 0.7 }}>hash(</span>
+                    <span style={{ fontWeight: "900" }}>{activeValue}</span>
+                    <span style={{ opacity: 0.7 }}>) % {bucketCount} = </span>
+                    <span style={{
+                        fontWeight: "900",
+                        background: `${sc}20`, padding: "0 4px", borderRadius: "3px",
+                    }}>{((activeValue % bucketCount) + bucketCount) % bucketCount}</span>
+                </div>
+            )}
+
+            {/* Bucket rows */}
+            <div style={{ padding: "6px 0" }}>
+                {buckets.map((bucket, bi) => {
+                    const hasActive = bucket.some(v => v === activeValue);
+                    const hasHighlight = bucket.some(v => v === highlightValue);
+                    const isEmpty = bucket.length === 0;
+
+                    return (
+                        <div key={bi} style={{
+                            display: "flex", alignItems: "center",
+                            padding: "3px 14px", minHeight: "30px",
+                            background: hasActive ? `${sc}06` : hasHighlight ? "#ef444406" : "transparent",
+                            borderLeft: `3px solid ${hasActive ? sc : hasHighlight ? "#ef4444" : "transparent"}`,
+                            transition: "all 0.3s",
+                        }}>
+                            {/* Bucket number */}
+                            <span style={{
+                                width: "32px", flexShrink: 0,
+                                fontSize: "0.55rem", fontWeight: "700",
+                                fontFamily: "monospace",
+                                color: hasActive ? sc : hasHighlight ? "#ef4444" : theme.textDim,
+                                opacity: isEmpty ? 0.3 : 1,
+                            }}>#{bi}</span>
+
+                            {/* Values in this bucket */}
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap", flex: 1,
+                            }}>
+                                {isEmpty ? (
+                                    <span style={{
+                                        fontSize: "0.5rem", color: theme.textDim, opacity: 0.25,
+                                        fontFamily: "monospace",
+                                    }}>—</span>
+                                ) : (
+                                    bucket.map((val, vi) => {
+                                        const isActive = val === activeValue;
+                                        const isFound = val === highlightValue;
+                                        const vColor = isFound ? "#ef4444" : isActive ? sc : theme.text;
+
+                                        return (
+                                            <React.Fragment key={vi}>
+                                                {/* Chain arrow */}
+                                                {vi > 0 && (
+                                                    <span style={{
+                                                        fontSize: "0.6rem", color: theme.textDim,
+                                                        fontWeight: "700", opacity: 0.5,
+                                                    }}>→</span>
+                                                )}
+                                                {/* Value pill */}
+                                                <div style={{
+                                                    display: "flex", alignItems: "center",
+                                                    padding: "3px 10px", borderRadius: "8px",
+                                                    background: isActive ? `${sc}18`
+                                                        : isFound ? "#ef444418"
+                                                            : (isDark ? "#1e293b" : "#f1f5f9"),
+                                                    border: `1.5px solid ${isActive || isFound ? vColor : theme.cardBorder}`,
+                                                    fontFamily: "'JetBrains Mono', monospace",
+                                                    fontSize: "0.78rem", fontWeight: "900",
+                                                    color: vColor,
+                                                    transition: "all 0.3s",
+                                                    transform: isActive || isFound ? "scale(1.1)" : "scale(1)",
+                                                    boxShadow: isActive ? `0 2px 12px ${sc}40`
+                                                        : isFound ? "0 2px 12px #ef444440" : "none",
+                                                }}>{val}</div>
+
+                                                {/* Badge */}
+                                                {isActive && status === "inserting" && (
+                                                    <span style={{
+                                                        fontSize: "0.45rem", fontWeight: "800",
+                                                        padding: "1px 5px", borderRadius: "4px",
+                                                        background: sc, color: "#fff",
+                                                    }}>NEW</span>
+                                                )}
+                                                {isFound && (
+                                                    <span style={{
+                                                        fontSize: "0.45rem", fontWeight: "800",
+                                                        padding: "1px 5px", borderRadius: "4px",
+                                                        background: "#ef4444", color: "#fff",
+                                                    }}>DUP!</span>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 
 /* ── Generic recursion tree ──
  * nodes: [{ id, label, parentId, status }]
