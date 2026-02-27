@@ -3,7 +3,7 @@ import { useTheme } from "../shared/ThemeContext";
 import ThemeToggle from "../components/layout/ThemeToggle";
 import { FAANG_TOPICS, FAANG_STATS } from "../data/faang500Data";
 
-export default function Faang500Page({ onBack }) {
+export default function Faang500Page({ onBack, onProblemClick }) {
     const { theme, isDark } = useTheme();
     const [expandedTopic, setExpandedTopic] = useState(null);
     const [expandedSub, setExpandedSub] = useState(null);
@@ -251,7 +251,7 @@ export default function Faang500Page({ onBack }) {
                                         return (
                                             <div key={si} style={{ marginBottom: "2px" }}>
                                                 {/* Subtopic header */}
-                                                <button
+                                                <div
                                                     onClick={() => setExpandedSub(subOpen ? null : subKey)}
                                                     style={{
                                                         width: "100%", display: "flex", alignItems: "center",
@@ -290,7 +290,7 @@ export default function Faang500Page({ onBack }) {
                                                             transition: "width 0.3s",
                                                         }} />
                                                     </div>
-                                                </button>
+                                                </div>
 
                                                 {/* Problems */}
                                                 {subOpen && (
@@ -337,15 +337,7 @@ export default function Faang500Page({ onBack }) {
                                                                         )}
                                                                     </button>
 
-                                                                    {/* Problem name */}
-                                                                    <span style={{
-                                                                        flex: 1, fontSize: "0.73rem", fontWeight: 500,
-                                                                        textDecoration: checked ? "line-through" : "none",
-                                                                        opacity: checked ? 0.5 : 1,
-                                                                        color: isDark ? "#e2e8f0" : "#1e293b",
-                                                                        transition: "opacity 0.15s",
-                                                                    }}>{p.name}</span>
-
+                                                                    {/* LeetCode / GFG link */}
                                                                     {lcUrl ? (
                                                                         <a href={lcUrl} target="_blank" rel="noopener noreferrer"
                                                                             style={{
@@ -378,6 +370,47 @@ export default function Faang500Page({ onBack }) {
                                                                             GFG
                                                                         </a>
                                                                     ) : null}
+
+                                                                    {/* Problem name */}
+                                                                    <span style={{
+                                                                        flex: 1, fontSize: "0.73rem", fontWeight: 500,
+                                                                        textDecoration: checked ? "line-through" : "none",
+                                                                        opacity: checked ? 0.5 : 1,
+                                                                        color: isDark ? "#e2e8f0" : "#1e293b",
+                                                                        transition: "opacity 0.15s",
+                                                                    }}>{p.name}</span>
+
+                                                                    {/* Book icon */}
+                                                                    {p.component && onProblemClick && (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onProblemClick(p);
+                                                                            }}
+                                                                            title="View Visualization"
+                                                                            style={{
+                                                                                display: "inline-flex", alignItems: "center",
+                                                                                justifyContent: "center",
+                                                                                flexShrink: 0, opacity: 0.6,
+                                                                                cursor: "pointer",
+                                                                                background: "transparent",
+                                                                                border: "none",
+                                                                                padding: "4px",
+                                                                                borderRadius: "4px",
+                                                                                transition: "all 0.15s",
+                                                                            }}
+                                                                            onMouseOver={e => {
+                                                                                e.currentTarget.style.opacity = 1;
+                                                                                e.currentTarget.style.background = isDark ? "rgba(105, 111, 199, 0.15)" : "rgba(105, 111, 199, 0.1)";
+                                                                            }}
+                                                                            onMouseOut={e => {
+                                                                                e.currentTarget.style.opacity = 0.6;
+                                                                                e.currentTarget.style.background = "transparent";
+                                                                            }}
+                                                                        >
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#696FC7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg>
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             );
                                                         })}

@@ -3,11 +3,9 @@ import ThemeToggle from "../components/layout/ThemeToggle";
 import Stat from "../components/layout/Stat";
 import Footer from "../components/layout/Footer";
 import { PATTERNS, CATEGORIES, totalProblems, readyProblems } from "../data/patternsData";
-import { NC_PATTERNS } from "../data/neetcode250Data";
 
 export default function HomePage({ onCategoryClick, onNcModeClick, onFaang500Click }) {
     const { theme, isDark } = useTheme();
-    const ncTotalProblems = NC_PATTERNS.reduce((s, p) => s + p.problems.length, 0);
 
     return (
         <div style={{
@@ -54,67 +52,8 @@ export default function HomePage({ onCategoryClick, onNcModeClick, onFaang500Cli
                 </div>
             </div>
 
-            {/* NeetCode 250 Banner */}
-            <div style={{ maxWidth: "900px", margin: "0 auto", padding: "30px 20px 0" }}>
-                <button
-                    onClick={onNcModeClick}
-                    style={{
-                        width: "100%",
-                        background: isDark
-                            ? "linear-gradient(135deg, #431407, #1c1917, #422006)"
-                            : "linear-gradient(135deg, #fff7ed, #ffffff, #fef3c7)",
-                        border: `2px solid ${isDark ? '#f9731633' : '#f9731644'}`,
-                        borderRadius: "24px", padding: "32px 36px",
-                        cursor: "pointer", textAlign: "left",
-                        transition: "all 0.3s",
-                        position: "relative", overflow: "hidden",
-                        display: "flex", alignItems: "center", gap: "24px",
-                    }}
-                    onMouseOver={e => {
-                        e.currentTarget.style.borderColor = '#f97316';
-                        e.currentTarget.style.transform = "translateY(-3px)";
-                        e.currentTarget.style.boxShadow = `0 16px 50px ${isDark ? '#f9731633' : '#f9731622'}`;
-                    }}
-                    onMouseOut={e => {
-                        e.currentTarget.style.borderColor = isDark ? '#f9731633' : '#f9731644';
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "none";
-                    }}
-                >
-                    <div style={{
-                        position: "absolute", top: "-50px", right: "-50px",
-                        width: "200px", height: "200px", borderRadius: "50%",
-                        background: "radial-gradient(circle, #f9731615 0%, transparent 70%)",
-                        pointerEvents: "none",
-                    }} />
-                    <div style={{
-                        fontSize: "3rem",
-                        background: "linear-gradient(135deg, #f97316, #fbbf24)",
-                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                        fontWeight: "900", lineHeight: 1,
-                    }}>
-                        🔥
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <h2 style={{
-                            margin: "0 0 4px", fontSize: "1.5rem", fontWeight: "900",
-                            background: "linear-gradient(135deg, #f97316, #fb923c, #fbbf24)",
-                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                        }}>
-                            NeetCode 250
-                        </h2>
-                        <p style={{ margin: 0, fontSize: "0.85rem", color: theme.textMuted }}>
-                            18 patterns • {ncTotalProblems} problems • Organized by difficulty
-                        </p>
-                    </div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.7rem" }}>
-                        <span style={{ background: "#065f4620", padding: "4px 10px", borderRadius: "8px", fontWeight: "700", color: "#4ade80" }}>Easy</span>
-                        <span style={{ background: "#f59e0b20", padding: "4px 10px", borderRadius: "8px", fontWeight: "700", color: "#fbbf24" }}>Medium</span>
-                        <span style={{ background: "#ef444420", padding: "4px 10px", borderRadius: "8px", fontWeight: "700", color: "#f87171" }}>Hard</span>
-                    </div>
-                    <div style={{ fontSize: "1.5rem", color: "#f97316", fontWeight: "900" }}>→</div>
-                </button>
-            </div>
+
+
 
             {/* FAANG 500 Banner */}
             <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px 20px 0" }}>

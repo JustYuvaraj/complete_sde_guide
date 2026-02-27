@@ -153,6 +153,9 @@ import PySets from "../problems/PySets";
 import PyFunctions from "../problems/PyFunctions";
 import PySorting from "../problems/PySorting";
 
+// ── Engine-powered Visualizations ──
+import { EngTwoSum, EngMoveZeroes, EngContainsDuplicate } from "../engines/index";
+
 // ═══════════════════════════════════════════════════════════════════
 //  Registry: component name string → React component
 // ═══════════════════════════════════════════════════════════════════
@@ -318,4 +321,9 @@ export const COMPONENTS = {
     PySets,
     PyFunctions,
     PySorting,
+
+    // Engine-powered visualizations
+    EngTwoSum,
+    EngMoveZeroes,
+    EngContainsDuplicate,
 };
