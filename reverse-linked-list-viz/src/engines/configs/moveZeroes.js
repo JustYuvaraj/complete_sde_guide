@@ -41,31 +41,30 @@ export const moveZeroesConfig = {
     explain: [
         {
             icon: "📋", title: "Problem Statement", color: "#ef4444",
-            content: `## LeetCode 283 — Move Zeroes
+            content: `
+<p>Given an integer array <code>nums</code>, move all <code>0</code>&#39;s to the end of it while maintaining the relative order of the non-zero elements.</p>
 
-**Difficulty:** Easy   **Topics:** Array, Two Pointers
+<p><strong>Note</strong> that you must do this in-place without making a copy of the array.</p>
 
----
+<p>&nbsp;</p>
+<p><strong class="example">Example 1:</strong></p>
+<pre><strong>Input:</strong> nums = [0,1,0,3,12]
+<strong>Output:</strong> [1,3,12,0,0]
+</pre><p><strong class="example">Example 2:</strong></p>
+<pre><strong>Input:</strong> nums = [0]
+<strong>Output:</strong> [0]
+</pre>
+<p>&nbsp;</p>
+<p><strong>Constraints:</strong></p>
 
-Given an integer array \`nums\`, move all \`0\`'s to the end of it while maintaining the relative order of the non-zero elements.
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>-2<sup>31</sup> &lt;= nums[i] &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
 
-**Note:** You must do this **in-place** without making a copy of the array.
-
----
-
-### Examples
-
-**Example 1:**
-    Input:  nums = [0,1,0,3,12]
-    Output: [1,3,12,0,0]
-
-**Example 2:**
-    Input:  nums = [0]
-    Output: [0]
-
-### Constraints
-- 1 <= nums.length <= 10⁴
-- -2³¹ <= nums[i] <= 2³¹ - 1`
+<p>&nbsp;</p>
+<strong>Follow up:</strong> Could you minimize the total number of operations done?
+`
         },
         {
             icon: "🧠", title: "How to Think & Solve", color: "#8b5cf6",

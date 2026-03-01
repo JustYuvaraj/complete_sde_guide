@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 import { useTheme } from "./ThemeContext";
 
 /* ━━━ Code Panel ━━━ */
@@ -92,6 +95,46 @@ export function VariablesPanel({ vars, title = "🔍 Variables" }) {
     );
 }
 
+/* ━━━ Variable Guide Panel (Static info) ━━━ */
+export function VariableGuide({ defs, title = "📖 Variable Guide" }) {
+    const { theme } = useTheme();
+    if (!defs || defs.length === 0) return null;
+    return (
+        <div style={{
+            background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
+            borderRadius: "12px", overflow: "hidden",
+        }}>
+            <div style={{
+                background: theme.cardHeaderBg, padding: "6px 14px",
+                fontSize: "0.63rem", color: theme.textMuted,
+                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+            }}>
+                {title}
+            </div>
+            <div style={{ padding: "8px 12px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.65rem" }}>
+                    <thead>
+                        <tr style={{ borderBottom: `1px solid ${theme.cardBorder}`, textAlign: "left" }}>
+                            <th style={{ padding: "4px 0", color: theme.textDim, fontWeight: "600" }}>Var</th>
+                            <th style={{ padding: "4px 0", color: theme.textDim, fontWeight: "600" }}>Type</th>
+                            <th style={{ padding: "4px 0", color: theme.textDim, fontWeight: "600" }}>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {defs.map((d, i) => (
+                            <tr key={i} style={{ borderBottom: i === defs.length - 1 ? "none" : `1px solid ${theme.cardHeaderBorder}` }}>
+                                <td style={{ padding: "6px 0", color: theme.varKey, fontWeight: "800", fontFamily: "monospace" }}>{d.name}</td>
+                                <td style={{ padding: "6px 0", color: theme.textDim }}>{d.type}</td>
+                                <td style={{ padding: "6px 0", color: theme.text, lineHeight: "1.3" }}>{d.purpose}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
 /* ━━━ Call Stack Panel ━━━ */
 export function CallStackPanel({ frames, renderFrame, emptyText = "empty" }) {
     const { theme } = useTheme();
@@ -165,7 +208,45 @@ export function MessageBar({ phase, phaseLabel, msg, accentColor }) {
     );
 }
 
-/* ━━━ Control Bar ━━━ */
+// ── Deprecated: ControlPanel (Use usePlayer + CodeEditorPanel instead) ──
+export function ControlPanel({ currentStep, totalSteps, onStepChange }) {
+    const { theme, isDark } = useTheme();
+    return (
+        <div style={{
+            display: "flex", gap: "10px", alignItems: "center",
+            padding: "16px 24px", background: isDark ? "rgba(22, 27, 34, 0.75)" : "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(20px)", borderRadius: "16px",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+            boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.5)" : "0 8px 32px rgba(0,0,0,0.1)",
+        }}>
+            <button
+                onClick={() => onStepChange(Math.max(0, currentStep - 1))}
+                disabled={currentStep === 0}
+                style={{
+                    background: theme.btnBg, color: theme.text, border: `1px solid ${theme.cardBorder}`,
+                    borderRadius: "8px", padding: "6px 16px", cursor: "pointer", opacity: currentStep === 0 ? 0.5 : 1
+                }}
+            >
+                Prev
+            </button>
+            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: theme.text, minWidth: "100px", textAlign: "center" }}>
+                Step {currentStep + 1} / {totalSteps}
+            </span>
+            <button
+                onClick={() => onStepChange(Math.min(totalSteps - 1, currentStep + 1))}
+                disabled={currentStep === totalSteps - 1}
+                style={{
+                    background: "#818cf8", color: "#fff", border: "none",
+                    borderRadius: "8px", padding: "6px 16px", cursor: "pointer", opacity: currentStep === totalSteps - 1 ? 0.5 : 1
+                }}
+            >
+                Next
+            </button>
+        </div>
+    );
+}
+
+/* ━━━ Control Bar (Legacy) ━━━ */
 export function ControlBar({ idx, total, playing, setPlaying, setIdx }) {
     const { theme } = useTheme();
     const btns = [
@@ -196,8 +277,11 @@ export function VizCard({ title, children, maxWidth = "920px" }) {
     const { theme } = useTheme();
     return (
         <div style={{
-            background: theme.cardBg, border: `1px solid ${theme.cardBorder}`,
-            borderRadius: "12px", padding: "10px 16px",
+            background: theme.isDark ? "rgba(15, 23, 42, 0.4)" : "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+            border: `1px solid ${theme.isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+            boxShadow: theme.isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.05)",
+            borderRadius: "16px", padding: "16px 20px",
             width: "100%", maxWidth,
         }}>
             {title && (
@@ -334,7 +418,8 @@ export function ExplainPanel({ sections = [] }) {
 
     return (
         <div style={{
-            width: "100%", maxWidth: "920px",
+            width: "100%", maxWidth: "920px", flexShrink: 0,
+            display: "flex", flexDirection: "column",
             background: isDark ? "#0d1117" : "#f8fafc",
             border: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
             borderRadius: "12px", overflow: "hidden",
@@ -346,7 +431,8 @@ export function ExplainPanel({ sections = [] }) {
                 padding: "10px 16px", background: "transparent", border: "none",
                 cursor: "pointer", color: isDark ? "#e2e8f0" : "#1e293b",
                 fontFamily: "'Fira Code','JetBrains Mono',monospace",
-                fontSize: "0.78rem", fontWeight: 800, textAlign: "left",
+                fontSize: "0.85rem", fontWeight: 800, textAlign: "left",
+                flexShrink: 0,
             }}>
                 <span style={{
                     fontSize: "1.1rem",
@@ -363,11 +449,16 @@ export function ExplainPanel({ sections = [] }) {
 
             {/* Content */}
             {open && (
-                <div style={{ borderTop: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}` }}>
+                <div style={{
+                    borderTop: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
+                    display: "flex", flexDirection: "column",
+                    maxHeight: "35vh", // Limits the overall open height explicitly
+                }}>
                     {/* Tabs */}
                     <div style={{
                         display: "flex", gap: "0", overflowX: "auto",
                         borderBottom: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
+                        flexShrink: 0,
                     }}>
                         {sections.map((sec, i) => {
                             const isActive = i === activeTab;
@@ -381,81 +472,80 @@ export function ExplainPanel({ sections = [] }) {
                                     cursor: "pointer",
                                     color: isActive ? col : (isDark ? "#64748b" : "#94a3b8"),
                                     fontFamily: "'Fira Code','JetBrains Mono',monospace",
-                                    fontSize: "0.62rem", fontWeight: isActive ? 800 : 600,
+                                    fontSize: "0.68rem", fontWeight: isActive ? 800 : 600,
                                     display: "flex", alignItems: "center", gap: "6px",
                                     justifyContent: "center", whiteSpace: "nowrap",
                                     transition: "all 0.2s",
                                 }}>
-                                    <span style={{ fontSize: "0.85rem" }}>{sec.icon}</span>
+                                    <span style={{ fontSize: "0.9rem" }}>{sec.icon}</span>
                                     {sec.title}
                                 </button>
                             );
                         })}
                     </div>
 
+                    {/* Injection of sleek scrollbar styles for this component */}
+                    <style>{`
+                        .explain-scroll::-webkit-scrollbar {
+                            width: 6px;
+                            background-color: transparent;
+                        }
+                        .explain-scroll::-webkit-scrollbar-track {
+                            background-color: transparent;
+                            border-radius: 10px;
+                        }
+                        .explain-scroll::-webkit-scrollbar-thumb {
+                            background-color: ${isDark ? "#334155" : "#cbd5e1"};
+                            border-radius: 10px;
+                        }
+                        .explain-scroll::-webkit-scrollbar-thumb:hover {
+                            background-color: ${isDark ? "#475569" : "#94a3b8"};
+                        }
+                    `}</style>
                     {/* Active Tab Content */}
-                    <div style={{
+                    <div className="explain-scroll" style={{
                         padding: "16px 20px",
-                        fontSize: "0.72rem", lineHeight: "1.8",
+                        fontSize: "1.05rem", lineHeight: "1.8",
                         color: isDark ? "#cbd5e1" : "#334155",
-                        maxHeight: "400px", overflowY: "auto",
+                        overflowY: "auto",
+                        flex: 1, /* Takes up the remaining height in 35vh and scrolls */
                     }}>
                         {typeof sections[activeTab].content === "string"
-                            ? sections[activeTab].content.split("\n").map((line, i) => {
-                                if (!line.trim()) return <div key={i} style={{ height: "8px" }} />;
-                                // Handle headers (lines starting with ##)
-                                if (line.startsWith("### ")) return (
-                                    <div key={i} style={{ fontSize: "0.7rem", fontWeight: 800, color: sections[activeTab].color || accentColors[activeTab % accentColors.length], marginTop: "10px", marginBottom: "4px" }}>
-                                        {line.replace("### ", "")}
-                                    </div>
-                                );
-                                if (line.startsWith("## ")) return (
-                                    <div key={i} style={{ fontSize: "0.75rem", fontWeight: 800, color: isDark ? "#e2e8f0" : "#1e293b", marginTop: "12px", marginBottom: "4px" }}>
-                                        {line.replace("## ", "")}
-                                    </div>
-                                );
-                                // Handle bullet points
-                                if (line.trim().startsWith("• ") || line.trim().startsWith("- ")) return (
-                                    <div key={i} style={{ paddingLeft: "14px", position: "relative", marginBottom: "2px" }}>
-                                        <span style={{ position: "absolute", left: "2px", color: sections[activeTab].color || accentColors[activeTab % accentColors.length] }}>•</span>
-                                        {line.trim().replace(/^[•\-]\s*/, "")}
-                                    </div>
-                                );
-                                // Handle numbered lists
-                                if (/^\d+[\.\)]/.test(line.trim())) return (
-                                    <div key={i} style={{ paddingLeft: "14px", marginBottom: "2px" }}>
-                                        <span style={{ fontWeight: 700, color: sections[activeTab].color || accentColors[activeTab % accentColors.length] }}>
-                                            {line.trim().match(/^\d+[\.\)]/)[0]}
-                                        </span>
-                                        {line.trim().replace(/^\d+[\.\)]\s*/, " ")}
-                                    </div>
-                                );
-                                // Handle code-like lines (starts with spaces/tabs or backticks)
-                                if (line.startsWith("    ") || line.startsWith("\t") || line.startsWith("```")) {
-                                    if (line.startsWith("```")) return null;
-                                    return (
-                                        <div key={i} style={{
-                                            fontFamily: "'Fira Code', monospace", fontSize: "0.65rem",
-                                            background: isDark ? "#1e293b" : "#f1f5f9",
-                                            padding: "2px 10px", borderRadius: "4px",
-                                            color: isDark ? "#93c5fd" : "#1e40af",
-                                            marginBottom: "1px", borderLeft: `2px solid ${sections[activeTab].color || "#6366f1"}`,
-                                        }}>{line}</div>
-                                    );
-                                }
-                                // Handle bold text with **
-                                const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                                return (
-                                    <div key={i} style={{ marginBottom: "2px" }}>
-                                        {parts.map((part, j) => {
-                                            if (part.startsWith("**") && part.endsWith("**")) {
-                                                return <strong key={j} style={{ color: isDark ? "#e2e8f0" : "#1e293b", fontWeight: 800 }}>{part.slice(2, -2)}</strong>;
-                                            }
-                                            return <span key={j}>{part}</span>;
-                                        })}
-                                    </div>
-                                );
-                            })
+                            ? <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw]}
+                                components={{
+                                    p: ({ node, ...props }) => <p style={{ marginBottom: '0.4rem' }} {...props} />,
+                                    pre: ({ node, ...props }) => <pre style={{
+                                        background: isDark ? '#1e293b' : '#f1f5f9',
+                                        padding: '8px',
+                                        borderRadius: '6px',
+                                        overflowX: 'auto',
+                                        fontSize: '0.85rem',
+                                        fontFamily: "'JetBrains Mono', monospace",
+                                        border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                                    }} {...props} />,
+                                    code: ({ node, inline, ...props }) => inline
+                                        ? <code style={{
+                                            background: isDark ? '#1e293b' : '#f1f5f9',
+                                            padding: '1px 4px',
+                                            borderRadius: '3px',
+                                            color: isDark ? '#93c5fd' : '#1e40af',
+                                            fontSize: '0.85rem',
+                                            fontFamily: "'JetBrains Mono', monospace"
+                                        }} {...props} />
+                                        : <code style={{ fontFamily: "'JetBrains Mono', monospace" }} {...props} />,
+                                    h2: ({ node, ...props }) => <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: isDark ? '#e2e8f0' : '#1e293b', marginTop: '14px', marginBottom: '6px', borderBottom: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`, paddingBottom: '4px' }} {...props} />,
+                                    h3: ({ node, ...props }) => <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: sections[activeTab].color || "#6366f1", marginTop: '12px', marginBottom: '4px' }} {...props} />,
+                                    ul: ({ node, ...props }) => <ul style={{ paddingLeft: '1.2rem', marginBottom: '0.4rem' }} {...props} />,
+                                    li: ({ node, ...props }) => <li style={{ marginBottom: '0.2rem' }} {...props} />,
+                                    table: ({ node, ...props }) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '0.4rem', fontSize: '0.85rem' }} {...props} />,
+                                    th: ({ node, ...props }) => <th style={{ border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`, padding: '4px 8px', background: isDark ? "#1e293b" : "#f1f5f9" }} {...props} />,
+                                    td: ({ node, ...props }) => <td style={{ border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`, padding: '4px 8px' }} {...props} />,
+                                }}
+                            >
+                                {sections[activeTab].content}
+                            </ReactMarkdown>
                             : sections[activeTab].content
                         }
                     </div>
@@ -478,6 +568,7 @@ export function CodeEditorPanel({
         <div style={{
             flex: "1 1 340px", background: theme.cardBg,
             border: `1px solid ${theme.cardBorder}`, borderRadius: "12px", overflow: "hidden",
+            display: "flex", flexDirection: "column"
         }}>
             {/* Header: file + controls */}
             <div style={{
@@ -524,7 +615,12 @@ export function CodeEditorPanel({
             </div>
 
             {/* Code lines */}
-            <div style={{ padding: "4px 0" }}>
+            <div style={{ padding: "4px 0", overflowY: "auto", flex: 1 }}>
+                <style>{`
+    div::-webkit-scrollbar { width: 6px; }
+    div::-webkit-scrollbar-track { background: transparent; }
+    div::-webkit-scrollbar-thumb { background: ${isDark ? '#334155' : '#cbd5e1'}; border-radius: 10px; }
+`}</style>
                 {code.map(line => {
                     const active = line.id === step.cl;
                     return (
@@ -649,11 +745,17 @@ export function HashMapPanel({
     const keys = Object.keys(entries);
 
     /* Build bucket structure */
+    const hashKey = (k) => {
+        const n = parseInt(k);
+        if (!isNaN(n)) return ((n % bucketCount) + bucketCount) % bucketCount;
+        // Simple string hash for non-numeric keys
+        let h = 0;
+        for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) | 0;
+        return ((h % bucketCount) + bucketCount) % bucketCount;
+    };
     const buckets = Array.from({ length: bucketCount }, () => []);
     keys.forEach(key => {
-        const numKey = parseInt(key);
-        const bucket = ((numKey % bucketCount) + bucketCount) % bucketCount;
-        buckets[bucket].push({ key, value: entries[key] });
+        buckets[hashKey(key)].push({ key, value: entries[key] });
     });
 
     const statusColors = {
@@ -666,15 +768,17 @@ export function HashMapPanel({
     return (
         <div style={{
             width: "100%", maxWidth: "920px",
-            background: theme.cardBg,
-            border: `1px solid ${theme.cardBorder}`,
-            borderRadius: "12px", overflow: "hidden",
+            background: isDark ? "rgba(15, 23, 42, 0.4)" : "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+            boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.05)",
+            borderRadius: "16px", overflow: "hidden",
         }}>
             {/* Header */}
             <div style={{
-                padding: "8px 14px",
-                background: theme.cardHeaderBg,
-                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                padding: "10px 16px",
+                background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+                borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                 display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -716,7 +820,7 @@ export function HashMapPanel({
                     <span style={{
                         fontWeight: "900",
                         background: `${sc}20`, padding: "0 4px", borderRadius: "3px",
-                    }}>{((parseInt(activeKey) % bucketCount) + bucketCount) % bucketCount}</span>
+                    }}>{hashKey(String(activeKey))}</span>
                 </div>
             )}
 
@@ -852,10 +956,16 @@ export function HashSetPanel({
     const { theme, isDark } = useTheme();
 
     /* Build bucket structure */
+    const hashVal = (v) => {
+        if (typeof v === 'number') return ((v % bucketCount) + bucketCount) % bucketCount;
+        const s = String(v);
+        let h = 0;
+        for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+        return ((h % bucketCount) + bucketCount) % bucketCount;
+    };
     const buckets = Array.from({ length: bucketCount }, () => []);
     values.forEach(val => {
-        const bucket = ((val % bucketCount) + bucketCount) % bucketCount;
-        buckets[bucket].push(val);
+        buckets[hashVal(val)].push(val);
     });
 
     const statusColors = {
@@ -868,15 +978,17 @@ export function HashSetPanel({
     return (
         <div style={{
             width: "100%", maxWidth: "920px",
-            background: theme.cardBg,
-            border: `1px solid ${theme.cardBorder}`,
-            borderRadius: "12px", overflow: "hidden",
+            background: isDark ? "rgba(15, 23, 42, 0.4)" : "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+            boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.05)",
+            borderRadius: "16px", overflow: "hidden",
         }}>
             {/* Header */}
             <div style={{
-                padding: "8px 14px",
-                background: theme.cardHeaderBg,
-                borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                padding: "10px 16px",
+                background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+                borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                 display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -903,24 +1015,26 @@ export function HashSetPanel({
             </div>
 
             {/* Hash function indicator */}
-            {activeValue != null && status === "inserting" && (
-                <div style={{
-                    padding: "4px 14px", fontSize: "0.6rem",
-                    fontFamily: "'JetBrains Mono', monospace", fontWeight: "600",
-                    color: sc,
-                    background: `${sc}06`,
-                    borderBottom: `1px solid ${theme.cardHeaderBorder}`,
-                    display: "flex", alignItems: "center", gap: "6px",
-                }}>
-                    <span style={{ opacity: 0.7 }}>hash(</span>
-                    <span style={{ fontWeight: "900" }}>{activeValue}</span>
-                    <span style={{ opacity: 0.7 }}>) % {bucketCount} = </span>
-                    <span style={{
-                        fontWeight: "900",
-                        background: `${sc}20`, padding: "0 4px", borderRadius: "3px",
-                    }}>{((activeValue % bucketCount) + bucketCount) % bucketCount}</span>
-                </div>
-            )}
+            {
+                activeValue != null && status === "inserting" && (
+                    <div style={{
+                        padding: "4px 14px", fontSize: "0.6rem",
+                        fontFamily: "'JetBrains Mono', monospace", fontWeight: "600",
+                        color: sc,
+                        background: `${sc}06`,
+                        borderBottom: `1px solid ${theme.cardHeaderBorder}`,
+                        display: "flex", alignItems: "center", gap: "6px",
+                    }}>
+                        <span style={{ opacity: 0.7 }}>hash(</span>
+                        <span style={{ fontWeight: "900" }}>{activeValue}</span>
+                        <span style={{ opacity: 0.7 }}>) % {bucketCount} = </span>
+                        <span style={{
+                            fontWeight: "900",
+                            background: `${sc}20`, padding: "0 4px", borderRadius: "3px",
+                        }}>{hashVal(activeValue)}</span>
+                    </div>
+                )
+            }
 
             {/* Bucket rows */}
             <div style={{ padding: "6px 0" }}>
@@ -1011,7 +1125,7 @@ export function HashSetPanel({
                     );
                 })}
             </div>
-        </div>
+        </div >
     );
 }
 

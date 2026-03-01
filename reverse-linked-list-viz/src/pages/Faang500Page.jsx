@@ -1,12 +1,28 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTheme } from "../shared/ThemeContext";
 import ThemeToggle from "../components/layout/ThemeToggle";
 import { FAANG_TOPICS, FAANG_STATS } from "../data/faang500Data";
 
 export default function Faang500Page({ onBack, onProblemClick }) {
     const { theme, isDark } = useTheme();
-    const [expandedTopic, setExpandedTopic] = useState(null);
-    const [expandedSub, setExpandedSub] = useState(null);
+    const [expandedTopic, setExpandedTopic] = useState(() => {
+        const val = sessionStorage.getItem("faang500_expandedTopic");
+        return val !== null ? parseInt(val, 10) : null;
+    });
+    const [expandedSub, setExpandedSub] = useState(() => {
+        return sessionStorage.getItem("faang500_expandedSub");
+    });
+
+    useEffect(() => {
+        if (expandedTopic !== null) sessionStorage.setItem("faang500_expandedTopic", expandedTopic);
+        else sessionStorage.removeItem("faang500_expandedTopic");
+    }, [expandedTopic]);
+
+    useEffect(() => {
+        if (expandedSub !== null) sessionStorage.setItem("faang500_expandedSub", expandedSub);
+        else sessionStorage.removeItem("faang500_expandedSub");
+    }, [expandedSub]);
+
     const [checkedProblems, setCheckedProblems] = useState(() => {
         try { return JSON.parse(localStorage.getItem("faang500_checked") || "{}"); }
         catch { return {}; }
